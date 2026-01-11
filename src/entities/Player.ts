@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js'
 import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
-import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
+// import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
 
 export interface PlayerStats {
     hp: number,
