@@ -59,7 +59,7 @@ export class Player extends PIXI.Container {
         pierce: 1,
     }
 
-    public behaviours: (() => ProjectileBehavior)[] = [() => ProjectileBehaviours.Shrapnel(5, 'player_bullet')]
+    public behaviours: (() => ProjectileBehavior)[] = []
 
     constructor(texture: PIXI.Texture) {
         super()

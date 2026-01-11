@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import { Enemy } from './Enemy'
 
 import type { ProjectileManager } from '../systems/ProjectileManager'
-import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
+// import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
 
 export type EnemyBehaviorFn = (enemy: Enemy, dt: number, playerPos: PIXI.PointData, projectileManager: ProjectileManager) => void
 
