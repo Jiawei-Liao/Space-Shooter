@@ -7,6 +7,7 @@ export class Enemy extends PIXI.Container {
     public sprite: PIXI.Sprite
     private hitFilter: PIXI.ColorMatrixFilter
     private hitFilterTimer: number = 0
+    private hitFilterDuration: number = 0.1
     public isActive = false
     public hitboxType: 'circle' | 'rectangle' = 'circle'
     public stats!: EnemyStats
@@ -50,7 +51,7 @@ export class Enemy extends PIXI.Container {
     public hit(damage: number) {
         this.hp -= damage
 
-        this.hitFilterTimer = 0.1
+        this.hitFilterTimer = this.hitFilterDuration
         this.hitFilter.enabled = true
         this.hitFilter.alpha = 1.0
 

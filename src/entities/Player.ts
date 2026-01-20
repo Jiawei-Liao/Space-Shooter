@@ -39,8 +39,8 @@ export class Player extends PIXI.Container {
     private hitTimer: number = 0
     public onShoot?: (position: PIXI.PointData, projectileStats: ProjectileStats, behaviours: ProjectileBehavior[]) => void
     private queuedShots: QueuedShot[] = []
-    private readonly QUEUED_SHOTS_DELAY = 0.03
-    public hitboxRadius: number = 4
+    private readonly QUEUED_SHOTS_INTERVAL = 0.03
+    public readonly HITBOX_RADIUS: number = 4
 
     public playerStats: PlayerStats = {
         hp: 1,
@@ -75,7 +75,7 @@ export class Player extends PIXI.Container {
         this.addChild(this.sprite)
 
         this.hitbox = new PIXI.Graphics()
-            .circle(0, 0, this.hitboxRadius)
+            .circle(0, 0, this.HITBOX_RADIUS)
             .fill({ color: 0xFF0000 })
 
         this.hitFilter = new PIXI.ColorMatrixFilter()
@@ -145,7 +145,7 @@ export class Player extends PIXI.Container {
 
             for (let i = 0; i < totalProjectiles; i++) {
                 const waveIndex = Math.floor(i / 5)
-                const shotDelay = waveIndex * this.QUEUED_SHOTS_DELAY + dt
+                const shotDelay = waveIndex * this.QUEUED_SHOTS_INTERVAL + dt
                 const shotOffsetIndex = i % 5
 
                 this.queuedShots.push({

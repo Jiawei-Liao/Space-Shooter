@@ -119,7 +119,7 @@ export class GameContext {
             const dx = projectile.x - this.player.x
             const dy = projectile.y - this.player.y
             const dist = dx * dx + dy * dy
-            const playerRadius = this.player.hitboxRadius
+            const playerRadius = this.player.HITBOX_RADIUS
             const bulletRadius = projectile.width / 2
 
             if (dist < (playerRadius + bulletRadius) ** 2) {

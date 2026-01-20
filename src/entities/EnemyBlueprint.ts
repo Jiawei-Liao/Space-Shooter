@@ -39,14 +39,17 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
         },
         shootFn: () => {
             let fireTimer = 2
-            let burstTimer = 0;
-            let bulletsToFire = 0;
+            const FIRE_INTERVAL = 2
+            let burstTimer = 0
+            const BURST_INTERVAL = 0.1
+            let bulletsToFire = 0
+            const BURST_PROJECTILES = 5
 
             return (enemy, dt, gameContext) => {
                 fireTimer -= dt
                 if (fireTimer <= 0) {
-                    bulletsToFire = 5
-                    fireTimer = 2
+                    bulletsToFire = BURST_PROJECTILES
+                    fireTimer = FIRE_INTERVAL
                 }
 
                 // Shoot remaining shots in burst
@@ -54,7 +57,7 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                     burstTimer -= dt
                     if (burstTimer <= 0) {
                         bulletsToFire--
-                        burstTimer = 0.1
+                        burstTimer = BURST_INTERVAL
                         gameContext.enemyProjectiles.spawn(
                             { x: enemy.x, y: enemy.y + enemy.height / 2 },
                             'enemy_bullet',

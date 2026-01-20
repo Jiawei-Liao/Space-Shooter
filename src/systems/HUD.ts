@@ -10,6 +10,13 @@ export class HUD extends PIXI.Container {
     private readonly BAR_HEIGHT = 16
     private readonly GAP = 2
 
+    // HP bar colours
+    private readonly HEALTHY_COLOUR = 0x00F5D4
+    private readonly WARNING_RATIO = 0.5
+    private readonly WARNING_COLOUR = 0xFEE440
+    private readonly CRITICAL_RATIO = 0.25
+    private readonly CRITICAL_COLOUR = 0xFF5400
+
     constructor() {
         super()
 
@@ -38,9 +45,9 @@ export class HUD extends PIXI.Container {
 
         // HP level colors
         const ratio = hp / safeMaxHp
-        let color = 0x00F5D4
-        if (ratio < 0.5) color = 0xFEE440
-        if (ratio < 0.25) color = 0xFF5400
+        let color = this.HEALTHY_COLOUR
+        if (ratio < this.WARNING_RATIO) color = this.WARNING_COLOUR
+        if (ratio < this.CRITICAL_RATIO) color = this.CRITICAL_COLOUR
 
         // Draw HP bar
         this.healthGraphics

@@ -5,7 +5,9 @@ import { ENEMY_SETS, type EnemySet, type SpawnInstruction } from './EnemySets'
 export class EnemyDirector {
     public currentWave = 0
     private waveTimer = 0 // Time left before spawning next wave
+    private readonly WAVE_INTERVAL = 2 // Time between waves
     private waveCostRemaining = 0 // Amount to spend on next wave
+    private readonly ENEMY_SET_GENERATION_ATTEMPTS = 50
 
     private spawnQueue: SpawnInstruction[] = []
     private pendingSets: SpawnInstruction[][] = []
@@ -84,14 +86,14 @@ export class EnemyDirector {
             { minWave: 10, value: (w) => Math.pow(w, 1.5) - 170 },
         ])
         console.log(`Wave cost: ${this.waveCostRemaining}`)
-        this.waveTimer = 2.0
+        this.waveTimer = this.WAVE_INTERVAL
 
         // Reset pending sets
         this.pendingSets = []
 
         // Generate sets
         let attempts = 0
-        while (this.waveCostRemaining > 0 && attempts < 50) {
+        while (this.waveCostRemaining > 0 && attempts < this.ENEMY_SET_GENERATION_ATTEMPTS) {
             attempts++
             const applicableSets = this.enemySets.filter(s =>
                 s.cost <= this.waveCostRemaining &&
