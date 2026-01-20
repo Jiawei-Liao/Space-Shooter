@@ -1,14 +1,15 @@
 import * as PIXI from 'pixi.js'
-import type { EnemyBehaviorFn, EnemyBlueprint } from './EnemyBlueprint'
+import type { EnemyBehaviorFn, EnemyBlueprint, EnemyStats } from './EnemyBlueprint'
 import { GameContext } from '../GameContext'
-import { getHitFlashAlpha } from '../utils/AssetLoader'
+import { getHitFlashAlpha } from '../utils/Math'
 
 export class Enemy extends PIXI.Container {
     public sprite: PIXI.Sprite
     private hitFilter: PIXI.ColorMatrixFilter
     private hitFilterTimer: number = 0
     public isActive = false
-    public stats!: EnemyBlueprint
+    public hitboxType: 'circle' | 'rectangle' = 'circle'
+    public stats!: EnemyStats
     public hp: number = 0
     private shootFn: EnemyBehaviorFn = () => { }
     private moveFn: EnemyBehaviorFn = () => { }
@@ -30,13 +31,14 @@ export class Enemy extends PIXI.Container {
         this.visible = false
     }
 
-    spawn(position: PIXI.PointData, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn, sourceSetId?: string) {
+    spawn(position: PIXI.PointData, stats: EnemyStats, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn, sourceSetId?: string) {
         this.position.set(position.x, position.y)
-        this.stats = blueprint
-        this.hp = blueprint.hp
+        this.stats = stats
+        this.hp = stats.hp
         this.sprite.texture = blueprint.texture
         this.sprite.width = blueprint.width
         this.sprite.height = blueprint.height
+        this.hitboxType = blueprint.hitboxType
         this.shootFn = blueprint.shootFn()
         this.moveFn = moveFn
         this.sourceSetId = sourceSetId

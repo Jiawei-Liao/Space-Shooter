@@ -1,13 +1,14 @@
 import { GameContext } from '../GameContext'
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
 import type { EnemyBlueprint, EnemyBehaviorFn } from '../entities/EnemyBlueprint'
+import { getSteppedValue } from '../utils/Math'
 
 export interface SpawnInstruction {
     blueprint: EnemyBlueprint
     x: number
     y: number
     delay: number
-    moveFn?: EnemyBehaviorFn
+    moveFn: EnemyBehaviorFn
     setId?: string
 }
 
@@ -15,8 +16,8 @@ export interface EnemySet {
     setId?: string
     weight: number
     cost: number
-    minWave: number
-    maxWave: number
+    minWave?: number
+    maxWave?: number
     generateInstructions: (gameContext: GameContext) => SpawnInstruction[]
 }
 
@@ -26,10 +27,16 @@ export const ENEMY_SETS: EnemySet[] = [
         weight: 10,
         cost: 10,
         minWave: 1,
-        maxWave: 20,
+        maxWave: undefined,
         generateInstructions: (ctx) => {
             const instructions: SpawnInstruction[] = []
-            const count = 5
+            const count = getSteppedValue(ctx.enemyDirector.currentWave, [
+                { minWave: 1, value: 2 },
+                { minWave: 3, value: 3 },
+                { minWave: 5, value: 4 },
+                { minWave: 7, value: 5 },
+                { minWave: 10, value: 7 },
+            ])
             const spacing = GAME_WIDTH / (count + 1)
             const blueprint = ctx.enemyBlueprints.FIGHTER
 
@@ -42,7 +49,7 @@ export const ENEMY_SETS: EnemySet[] = [
                     setId: 'fighter_line',
                     moveFn: (enemy, dt, _context) => {
                         if (enemy.y < 200) {
-                            enemy.y += enemy.stats.speed * dt
+                            enemy.y += 200 * dt
                         }
                     }
                 })
@@ -54,11 +61,17 @@ export const ENEMY_SETS: EnemySet[] = [
         setId: 'fighter_circle',
         weight: 10,
         cost: 10,
-        minWave: 1,
-        maxWave: 20,
+        minWave: 2,
+        maxWave: undefined,
         generateInstructions: (ctx) => {
             const instructions: SpawnInstruction[] = []
-            const count = 5
+            const count = getSteppedValue(ctx.enemyDirector.currentWave, [
+                { minWave: 2, value: 1 },
+                { minWave: 3, value: 2 },
+                { minWave: 4, value: 3 },
+                { minWave: 6, value: 4 },
+                { minWave: 8, value: 5 },
+            ])
             const radius = 100
             const rotationSpeed = 1.5
             let isWalking = false // Whether the circle is walking around after reaching initial target

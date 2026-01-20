@@ -1,18 +1,20 @@
 import * as PIXI from 'pixi.js'
 import { Enemy } from './Enemy'
-
 import type { GameContext } from '../GameContext'
+import { getSteppedValue } from '../utils/Math'
 
 export type EnemyBehaviorFn = (enemy: Enemy, dt: number, gameContext: GameContext) => void
 
+export interface EnemyStats {
+    hp: number
+    scoreValue: number
+}
 export interface EnemyBlueprint {
     texture: PIXI.Texture
     width: number
     height: number
     hitboxType: 'circle' | 'rectangle'
-    hp: number
-    speed: number
-    scoreValue: number
+    generateStats: (wave: number) => EnemyStats
     shootFn: () => EnemyBehaviorFn
 }
 
@@ -22,9 +24,19 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
         width: 50,
         height: 50,
         hitboxType: 'circle',
-        hp: 3,
-        speed: 150,
-        scoreValue: 100,
+        generateStats: (wave: number) => {
+            return {
+                hp: getSteppedValue(wave, [
+                    { minWave: 1, value: 3 },
+                    { minWave: 5, value: 5 },
+                    { minWave: 10, value: 10 },
+                    { minWave: 20, value: 20 },
+                    { minWave: 30, value: (w) => w },
+                    { minWave: 50, value: (w) => 0.7 * Math.pow(w, 1.1) },
+                ]),
+                scoreValue: 100,
+            }
+        },
         shootFn: () => {
             let fireTimer = 2
             let burstTimer = 0;
@@ -49,7 +61,11 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                             {
                                 fireTimer: 0,
                                 fireRate: 0,
-                                damage: 1,
+                                damage: getSteppedValue(gameContext.enemyDirector.currentWave, [
+                                    { minWave: 1, value: 1 },
+                                    { minWave: 10, value: 2 },
+                                    { minWave: 20, value: 4 }
+                                ]),
                                 width: 20,
                                 height: 20,
                                 sizeScale: 1,

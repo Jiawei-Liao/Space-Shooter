@@ -16,10 +16,10 @@ export class EnemyManager {
         }
     }
 
-    spawn(position: PIXI.PointData, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn, sourceSetId?: string) {
+    spawn(position: PIXI.PointData, wave: number, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn, sourceSetId?: string) {
         const enemy = this.enemyPool.find(e => !e.isActive)
         if (enemy) {
-            enemy.spawn(position, blueprint, moveFn, sourceSetId)
+            enemy.spawn(position, blueprint.generateStats(wave), blueprint, moveFn, sourceSetId)
             this.activeEnemies.push(enemy)
         }
     }

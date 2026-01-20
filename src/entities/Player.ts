@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
 // import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
 import { GameContext } from '../GameContext'
-import { getHitFlashAlpha } from '../utils/AssetLoader'
+import { getHitFlashAlpha } from '../utils/Math'
 
 export interface PlayerStats {
     hp: number,

@@ -74,7 +74,7 @@ export class GameContext {
 
                 let isHit = false
 
-                if (enemy.stats.hitboxType === 'circle') {
+                if (enemy.hitboxType === 'circle') {
                     // Circle collision
                     const dx = playerProjectile.x - enemy.x
                     const dy = playerProjectile.y - enemy.y

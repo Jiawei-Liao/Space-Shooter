@@ -1,8 +1,9 @@
 import { GameContext } from '../GameContext'
+import { getSteppedValue } from '../utils/Math'
 import { ENEMY_SETS, type EnemySet, type SpawnInstruction } from './EnemySets'
 
 export class EnemyDirector {
-    private currentWave = 0
+    public currentWave = 0
     private waveTimer = 0 // Time left before spawning next wave
     private waveCostRemaining = 0 // Amount to spend on next wave
 
@@ -67,10 +68,7 @@ export class EnemyDirector {
             const enemy = this.spawnQueue[i]
             enemy.delay -= dt
             if (enemy.delay <= 0) {
-                const finalMoveFn = enemy.moveFn || ((e, dt, _ctx) => {
-                    e.y += e.stats.speed * dt
-                })
-                context.enemyManager.spawn({ x: enemy.x, y: enemy.y }, enemy.blueprint, finalMoveFn, enemy.setId)
+                context.enemyManager.spawn({ x: enemy.x, y: enemy.y }, this.currentWave, enemy.blueprint, enemy.moveFn, enemy.setId)
                 this.spawnQueue.splice(i, 1)
             }
         }
@@ -80,7 +78,12 @@ export class EnemyDirector {
         this.currentWave++
         console.log(`Starting Wave ${this.currentWave}`)
         // Wave cost scaling
-        this.waveCostRemaining = Math.pow(this.currentWave, 1.5) * 10
+        this.waveCostRemaining = getSteppedValue(this.currentWave, [
+            { minWave: 1, value: (w) => w * 10 },
+            { minWave: 5, value: (w) => w * 15 - 20 },
+            { minWave: 10, value: (w) => Math.pow(w, 1.5) - 170 },
+        ])
+        console.log(`Wave cost: ${this.waveCostRemaining}`)
         this.waveTimer = 2.0
 
         // Reset pending sets
