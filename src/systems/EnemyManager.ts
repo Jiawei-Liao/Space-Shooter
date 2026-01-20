@@ -1,17 +1,14 @@
 import * as PIXI from 'pixi.js'
-import { ENEMY_LIMIT } from '../gameConfig'
+import { ENEMY_LIMIT } from '../GameConfig'
+import { GameContext } from '../GameContext'
 import { Enemy } from '../entities/Enemy'
 import type { EnemyBehaviorFn, EnemyBlueprint } from '../entities/EnemyBlueprint'
-
-import type { ProjectileManager } from './ProjectileManager'
 
 export class EnemyManager {
     private enemyPool: Enemy[] = []
     public activeEnemies: Enemy[] = []
-    private projectileManager: ProjectileManager
 
-    constructor(app: PIXI.Application, projectileManager: ProjectileManager) {
-        this.projectileManager = projectileManager
+    constructor(app: PIXI.Application) {
         for (let i = 0; i < ENEMY_LIMIT; i++) {
             const enemy = new Enemy()
             app.stage.addChild(enemy)
@@ -19,18 +16,18 @@ export class EnemyManager {
         }
     }
 
-    spawn(position: PIXI.PointData, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn) {
+    spawn(position: PIXI.PointData, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn, sourceSetId?: string) {
         const enemy = this.enemyPool.find(e => !e.isActive)
         if (enemy) {
-            enemy.spawn(position, blueprint, moveFn)
+            enemy.spawn(position, blueprint, moveFn, sourceSetId)
             this.activeEnemies.push(enemy)
         }
     }
 
-    update(dt: number, playerPos: PIXI.PointData) {
+    update(dt: number, gameContext: GameContext) {
         for (let i = this.activeEnemies.length - 1; i >= 0; i--) {
             const enemy = this.activeEnemies[i]
-            enemy.update(dt, playerPos, this.projectileManager)
+            enemy.update(dt, gameContext)
 
             if (!enemy.isActive) {
                 this.activeEnemies.splice(i, 1)

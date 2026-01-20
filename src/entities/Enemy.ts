@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js'
 import type { EnemyBehaviorFn, EnemyBlueprint } from './EnemyBlueprint'
-import type { ProjectileManager } from '../systems/ProjectileManager'
+import { GameContext } from '../GameContext'
 
 export class Enemy extends PIXI.Container {
     public sprite: PIXI.Sprite
@@ -10,6 +10,7 @@ export class Enemy extends PIXI.Container {
     private shootFn: EnemyBehaviorFn = () => { }
     private moveFn: EnemyBehaviorFn = () => { }
     public offset = { x: 0, y: 0 }
+    public sourceSetId?: string
 
     constructor() {
         super()
@@ -21,7 +22,7 @@ export class Enemy extends PIXI.Container {
         this.visible = false
     }
 
-    spawn(position: PIXI.PointData, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn) {
+    spawn(position: PIXI.PointData, blueprint: EnemyBlueprint, moveFn: EnemyBehaviorFn, sourceSetId?: string) {
         this.position.set(position.x, position.y)
         this.stats = blueprint
         this.hp = blueprint.hp
@@ -30,6 +31,7 @@ export class Enemy extends PIXI.Container {
         this.sprite.height = blueprint.height
         this.shootFn = blueprint.shootFn()
         this.moveFn = moveFn
+        this.sourceSetId = sourceSetId
 
         this.isActive = true
         this.visible = true
@@ -49,9 +51,9 @@ export class Enemy extends PIXI.Container {
         this.visible = false
     }
 
-    update(dt: number, playerPos: PIXI.PointData, projectileManager: ProjectileManager) {
+    update(dt: number, gameContext: GameContext) {
         if (!this.isActive) return
-        this.shootFn(this, dt, playerPos, projectileManager)
-        this.moveFn(this, dt, playerPos, projectileManager)
+        this.shootFn(this, dt, gameContext)
+        this.moveFn(this, dt, gameContext)
     }
 }

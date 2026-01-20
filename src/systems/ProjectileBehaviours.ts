@@ -1,4 +1,4 @@
-import { getWallHit } from '../gameConfig'
+import { getWallHit } from '../GameConfig'
 import { Projectile } from '../entities/Projectile'
 import type { ProjectileManager } from './ProjectileManager'
 

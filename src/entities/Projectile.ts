@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js'
-import { isOutOfBounds } from '../gameConfig'
+import { isOutOfBounds } from '../GameConfig'
 import type { ProjectileStats } from './Player'
 import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
 import type { ProjectileManager } from '../systems/ProjectileManager'

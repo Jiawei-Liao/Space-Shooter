@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js'
+import { GameContext } from '../GameContext'
 import { Projectile } from '../entities/Projectile'
 import type { ProjectileBehavior } from './ProjectileBehaviours'
 import type { ProjectileStats } from '../entities/Player'
@@ -27,7 +28,7 @@ export class ProjectileManager {
         }
     }
 
-    update(dt: number) {
+    update(dt: number, _playerPos: PIXI.PointData, _gameContext: GameContext) {
         for (let i = this.activeProjectilePool.length - 1; i >= 0; i--) {
             const projectile = this.activeProjectilePool[i]
             projectile.update(dt)

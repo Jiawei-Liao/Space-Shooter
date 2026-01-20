@@ -1,6 +1,7 @@
 import * as PIXI from 'pixi.js'
 import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
 // import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
+import { GameContext } from '../GameContext'
 
 export interface PlayerStats {
     hp: number,
@@ -66,13 +67,13 @@ export class Player extends PIXI.Container {
 
         this.sprite = new PIXI.Sprite(texture)
         this.sprite.anchor.set(0.5)
-        this.sprite.width = 60
+        this.sprite.width = 50
         this.sprite.height = 60
         this.addChild(this.sprite)
 
         this.hitbox = new PIXI.Graphics()
             .circle(0, 0, this.hitboxRadius)
-            .fill({ color: 0x90E0EF })
+            .fill({ color: 0xFF0000 })
         this.addChild(this.hitbox)
     }
 
@@ -87,10 +88,10 @@ export class Player extends PIXI.Container {
         setTimeout(() => this.sprite.tint = 0xFFFFFF, 100)
     }
 
-    update(targetX: number, targetY: number, dt: number) {
+    update(dt: number, mousePos: { x: number, y: number }, _gameContext: GameContext) {
         // Move
-        this.x += (targetX - this.x)
-        this.y += (targetY - this.y)
+        this.x += (mousePos.x - this.x)
+        this.y += (mousePos.y - this.y)
 
         // Invincibility
         if (this.playerStats.invincibilityTimer > 0) {

@@ -1,10 +1,9 @@
 import * as PIXI from 'pixi.js'
 import { Enemy } from './Enemy'
 
-import type { ProjectileManager } from '../systems/ProjectileManager'
-// import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
+import type { GameContext } from '../GameContext'
 
-export type EnemyBehaviorFn = (enemy: Enemy, dt: number, playerPos: PIXI.PointData, projectileManager: ProjectileManager) => void
+export type EnemyBehaviorFn = (enemy: Enemy, dt: number, gameContext: GameContext) => void
 
 export interface EnemyBlueprint {
     texture: PIXI.Texture
@@ -27,30 +26,41 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
         speed: 150,
         scoreValue: 100,
         shootFn: () => {
-            let fireTimer = 0
+            let fireTimer = 2
+            let burstTimer = 0;
+            let bulletsToFire = 0;
 
-            return (enemy, dt, _playerPos, projectileManager) => {
+            return (enemy, dt, gameContext) => {
                 fireTimer -= dt
                 if (fireTimer <= 0) {
+                    bulletsToFire = 5
                     fireTimer = 2
+                }
 
-                    projectileManager.spawn(
-                        { x: enemy.x, y: enemy.y + enemy.height / 2 },
-                        'enemy_bullet',
-                        {
-                            fireTimer: 0,
-                            fireRate: 0,
-                            damage: 1,
-                            width: 20,
-                            height: 20,
-                            sizeScale: 1,
-                            speed: 300,
-                            angle: Math.PI / 2,
-                            numProjectiles: 1,
-                            pierce: 1
-                        },
-                        []
-                    )
+                // Shoot remaining shots in burst
+                if (bulletsToFire > 0) {
+                    burstTimer -= dt
+                    if (burstTimer <= 0) {
+                        bulletsToFire--
+                        burstTimer = 0.1
+                        gameContext.enemyProjectiles.spawn(
+                            { x: enemy.x, y: enemy.y + enemy.height / 2 },
+                            'enemy_bullet',
+                            {
+                                fireTimer: 0,
+                                fireRate: 0,
+                                damage: 1,
+                                width: 20,
+                                height: 20,
+                                sizeScale: 1,
+                                speed: 200,
+                                angle: Math.PI / 2,
+                                numProjectiles: 1,
+                                pierce: 1
+                            },
+                            []
+                        )
+                    }
                 }
             }
         },
