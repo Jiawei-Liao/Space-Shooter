@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js'
 import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
 // import { ProjectileBehaviours } from '../systems/ProjectileBehaviours'
 import { GameContext } from '../GameContext'
+import { getHitFlashAlpha } from '../utils/AssetLoader'
 
 export interface PlayerStats {
     hp: number,
@@ -34,6 +35,8 @@ interface QueuedShot {
 export class Player extends PIXI.Container {
     public sprite: PIXI.Sprite
     public hitbox: PIXI.Graphics
+    private hitFilter: PIXI.ColorMatrixFilter
+    private hitTimer: number = 0
     public onShoot?: (position: PIXI.PointData, projectileStats: ProjectileStats, behaviours: ProjectileBehavior[]) => void
     private queuedShots: QueuedShot[] = []
     private readonly QUEUED_SHOTS_DELAY = 0.03
@@ -74,6 +77,17 @@ export class Player extends PIXI.Container {
         this.hitbox = new PIXI.Graphics()
             .circle(0, 0, this.hitboxRadius)
             .fill({ color: 0xFF0000 })
+
+        this.hitFilter = new PIXI.ColorMatrixFilter()
+        this.hitFilter.matrix = [
+            1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+            0, 0, 0, 1, 0
+        ]
+        this.hitFilter.enabled = false
+        this.sprite.filters = [this.hitFilter]
+
         this.addChild(this.hitbox)
     }
 
@@ -82,10 +96,14 @@ export class Player extends PIXI.Container {
     }
 
     public hit(damage: number = 1) {
+        if (this.isInvincible) return
+
         this.playerStats.hp -= damage
         this.playerStats.invincibilityTimer = this.playerStats.invincibilityDuration
-        this.sprite.tint = 0xFF0000
-        setTimeout(() => this.sprite.tint = 0xFFFFFF, 100)
+
+        this.hitTimer = 0.1
+        this.hitFilter.enabled = true
+        this.hitFilter.alpha = 1.0
     }
 
     update(dt: number, mousePos: { x: number, y: number }, _gameContext: GameContext) {
@@ -93,12 +111,26 @@ export class Player extends PIXI.Container {
         this.x += (mousePos.x - this.x)
         this.y += (mousePos.y - this.y)
 
+        // Hit tint filter
+        if (this.hitTimer > 0) {
+            this.hitTimer -= dt
+
+            if (this.hitTimer <= 0) {
+                this.hitTimer = 0
+                this.hitFilter.enabled = false
+            } else {
+                this.hitFilter.alpha = getHitFlashAlpha(this.hitTimer)
+            }
+        }
+
         // Invincibility
         if (this.playerStats.invincibilityTimer > 0) {
             this.playerStats.invincibilityTimer -= dt
-        }
-        if (this.isInvincible) {
-            this.sprite.alpha = 0.5 + Math.sin(this.playerStats.invincibilityTimer * 30) * 0.3
+
+            // Only blink when outside of red hit tint filter
+            if (this.hitTimer <= 0) {
+                this.sprite.alpha = 0.5 + Math.sin(this.playerStats.invincibilityTimer * 30) * 0.3
+            }
         } else {
             this.sprite.alpha = 1.0
         }
