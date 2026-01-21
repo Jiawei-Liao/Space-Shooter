@@ -2,6 +2,7 @@ import { GameContext } from '../GameContext'
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
 import type { EnemyBlueprint, EnemyBehaviorFn } from '../entities/EnemyBlueprint'
 import { getSteppedValue } from '../utils/Math'
+import { randomWalkBehaviour, moveToBoundsBehaviour } from './EnemyMoveBehaviours'
 
 export interface SpawnInstruction {
     blueprint: EnemyBlueprint
@@ -40,16 +41,47 @@ export const ENEMY_SETS: EnemySet[] = [
             const spacing = GAME_WIDTH / (count + 1)
             const blueprint = ctx.enemyBlueprints.FIGHTER
 
+            const minY = 100
+            const maxY = getSteppedValue(ctx.enemyDirector.currentWave, [
+                { minWave: 1, value: 300 },
+                { minWave: 3, value: GAME_HEIGHT / 3 },
+                { minWave: 6, value: GAME_HEIGHT * 3 / 5 }
+            ])
+
+            const uniformChance = 0.5
+            const isUniform = Math.random() > uniformChance
+            const uniformY = Math.random() * (maxY - minY) + minY
+
             for (let i = 0; i < count; i++) {
+                const targetX = spacing * (i + 1)
+                const targetY = isUniform ? uniformY : Math.random() * (maxY - minY) + minY
+
+                const entry = moveToBoundsBehaviour({
+                    bounds: { minX: targetX, maxX: targetX, minY: targetY, maxY: targetY },
+                    speed: 300
+                })
+
+                const randomWalk = randomWalkBehaviour({
+                    bounds: { minX: targetX - 100, maxX: targetX + 100, minY: targetY - 30, maxY: targetY + 30 },
+                    speed: 50,
+                    minMoveDistX: 10,
+                    minMoveDistY: 10,
+                    threshold: 10
+                })
+
+                let isEntering = true
+
                 instructions.push({
                     blueprint: blueprint,
-                    x: spacing * (i + 1),
+                    x: targetX,
                     y: -50,
                     delay: 0,
                     setId: 'fighter_line',
                     moveFn: (enemy, dt, _context) => {
-                        if (enemy.y < 200) {
-                            enemy.y += 200 * dt
+                        if (isEntering) {
+                            if (entry(enemy, dt)) isEntering = false
+                        } else {
+                            randomWalk(enemy, dt)
                         }
                     }
                 })
@@ -74,16 +106,23 @@ export const ENEMY_SETS: EnemySet[] = [
             ])
             const radius = 100
             const rotationSpeed = 1.5
-            let isWalking = false // Whether the circle is walking around after reaching initial target
 
-            // Current circle center
-            let centerX = Math.random() * (GAME_WIDTH + 400) - 200
-            let centerY = -200
+            const center = { x: Math.random() * (GAME_WIDTH + 400) - 200, y: -200 }
 
-            // Where the circle should move to (Random within top third with 100 padding)
-            let targetX = Math.random() * (GAME_WIDTH - 200) + 100
-            let targetY = Math.random() * (GAME_HEIGHT / 3) + 100
+            const entry = moveToBoundsBehaviour({
+                bounds: { minX: 100, maxX: GAME_WIDTH - 100, minY: 100, maxY: GAME_HEIGHT / 3 },
+                speed: 300
+            })
 
+            const randomWalk = randomWalkBehaviour({
+                bounds: { minX: 100, maxX: GAME_WIDTH - 100, minY: 100, maxY: GAME_HEIGHT / 3 },
+                speed: 50,
+                minMoveDistX: 100,
+                minMoveDistY: 100,
+                threshold: 10
+            })
+
+            let isEntering = true
             let lastUpdateTime = -1
 
             for (let i = 0; i < count; i++) {
@@ -91,8 +130,8 @@ export const ENEMY_SETS: EnemySet[] = [
 
                 instructions.push({
                     blueprint: ctx.enemyBlueprints.FIGHTER,
-                    x: centerX + Math.cos(angle) * radius,
-                    y: centerY + Math.sin(angle) * radius,
+                    x: center.x + Math.cos(angle) * radius,
+                    y: center.y + Math.sin(angle) * radius,
                     delay: 0,
                     setId: 'fighter_circle',
                     moveFn: (enemy, dt, context) => {
@@ -100,41 +139,17 @@ export const ENEMY_SETS: EnemySet[] = [
                         if (lastUpdateTime !== context.app.ticker.lastTime) {
                             lastUpdateTime = context.app.ticker.lastTime
 
-                            const dx = targetX - centerX
-                            const dy = targetY - centerY
-                            const distToTarget = Math.sqrt(dx * dx + dy * dy)
-
-                            if (distToTarget < 20) {
-                                let newTargetX, newTargetY, distFromOldCenter
-                                let attempts = 0
-
-                                do {
-                                    newTargetX = Math.random() * (GAME_WIDTH - 200) + 100
-                                    newTargetY = Math.random() * (GAME_HEIGHT / 3) + 100
-
-                                    const diffX = newTargetX - centerX
-                                    const diffY = newTargetY - centerY
-                                    distFromOldCenter = Math.sqrt(diffX * diffX + diffY * diffY)
-                                } while (distFromOldCenter < 100 && attempts++ < 10)
-
-                                targetX = newTargetX
-                                targetY = newTargetY
-
-                                isWalking = true
+                            if (isEntering) {
+                                if (entry(center as any, dt)) isEntering = false
                             } else {
-                                // Move center towards target
-                                const moveSpeed = isWalking ? 80 : 400
-                                centerX += (dx / distToTarget) * moveSpeed * dt
-                                centerY += (dy / distToTarget) * moveSpeed * dt
+                                randomWalk(center as any, dt)
                             }
-
-
                         }
 
                         // Move enemy
                         angle += rotationSpeed * dt
-                        enemy.x = centerX + Math.cos(angle) * radius
-                        enemy.y = centerY + Math.sin(angle) * radius
+                        enemy.x = center.x + Math.cos(angle) * radius
+                        enemy.y = center.y + Math.sin(angle) * radius
                     }
                 })
             }
