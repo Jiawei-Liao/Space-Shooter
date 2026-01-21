@@ -32,7 +32,7 @@ export class Projectile extends PIXI.Sprite {
         this.visible = true
     }
 
-    update(dt: number) {
+    update(dt: number, warpFactor: number = 1.0) {
         if (!this.isActive) return
 
         // Modify bullet based on behaviours
@@ -44,6 +44,11 @@ export class Projectile extends PIXI.Sprite {
         this.rotation = this.projectileStats.angle
         this.x += Math.cos(this.projectileStats.angle) * this.projectileStats.speed * dt
         this.y += Math.sin(this.projectileStats.angle) * this.projectileStats.speed * dt
+
+        // Apply warp effect and move down at same rate as background
+        if (warpFactor > 1.0) {
+            this.y += 50 * (warpFactor - 1.0) * dt
+        }
 
         if (isOutOfBounds(this.position)) {
             this.remove()

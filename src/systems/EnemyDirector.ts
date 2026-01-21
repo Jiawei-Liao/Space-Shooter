@@ -9,6 +9,11 @@ export class EnemyDirector {
     private waveCostRemaining = 0 // Amount to spend on next wave
     private readonly ENEMY_SET_GENERATION_ATTEMPTS = 50
 
+    private readonly BOSS_WAVE_INTERVAL = 5
+    private readonly DEFAULT_WARP_SPEED = 1
+    private readonly SLOW_WARP_SPEED = 5
+    private readonly FAST_WARP_SPEED = 20
+
     private spawnQueue: SpawnInstruction[] = []
     private pendingSets: SpawnInstruction[][] = []
     private enemySets: EnemySet[] = []
@@ -60,6 +65,16 @@ export class EnemyDirector {
         // Wait for timer before starting new wave
         if (isWaveClear) {
             this.waveTimer -= dt
+
+            // Speed up background during interval
+            if (this.currentWave % this.BOSS_WAVE_INTERVAL === 0) {
+                context.background.setWarpFactor(this.FAST_WARP_SPEED)
+                context.enemyProjectiles.setWarpFactor(this.FAST_WARP_SPEED)
+            } else {
+                context.background.setWarpFactor(this.SLOW_WARP_SPEED)
+                context.enemyProjectiles.setWarpFactor(this.SLOW_WARP_SPEED)
+            }
+
             if (this.waveTimer <= 0) {
                 this.startNewWave(context)
             }
@@ -78,12 +93,16 @@ export class EnemyDirector {
 
     private startNewWave(context: GameContext) {
         this.currentWave++
+        // Reset background speed
+        context.background.setWarpFactor(this.DEFAULT_WARP_SPEED)
+        context.enemyProjectiles.setWarpFactor(this.DEFAULT_WARP_SPEED)
+
         console.log(`Starting Wave ${this.currentWave}`)
         // Wave cost scaling
         this.waveCostRemaining = getSteppedValue(this.currentWave, [
             { minWave: 1, value: (w) => w * 10 },
             { minWave: 5, value: (w) => w * 15 - 20 },
-            { minWave: 10, value: (w) => Math.pow(w, 1.5) - 170 },
+            { minWave: 10, value: (w) => Math.pow(w, 1.5) * 10 - 170 },
         ])
         console.log(`Wave cost: ${this.waveCostRemaining}`)
         this.waveTimer = this.WAVE_INTERVAL

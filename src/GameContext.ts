@@ -8,6 +8,7 @@ import { EnemyManager } from './systems/EnemyManager'
 import { HUD } from './systems/HUD'
 import { createEnemyBlueprints, type EnemyBlueprint } from './entities/EnemyBlueprint'
 import { EnemyDirector } from './systems/EnemyDirector'
+import { Background } from './entities/Background'
 
 export class GameContext {
     public app: PIXI.Application
@@ -18,9 +19,14 @@ export class GameContext {
     public enemyDirector: EnemyDirector
     public hud: HUD
     public enemyBlueprints: Record<string, EnemyBlueprint>
+    public background: Background
 
     constructor(app: PIXI.Application, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>) {
         this.app = app
+
+        // Background
+        this.background = new Background()
+        app.stage.addChild(this.background)
 
         // Projectiles
         this.playerProjectiles = new ProjectileManager(app, projectileTextures, PLAYER_PROJECTILE_LIMIT)
@@ -43,6 +49,8 @@ export class GameContext {
     }
 
     update(dt: number, mousePos: PIXI.PointData, gameContext: GameContext) {
+        this.background.update(dt)
+
         this.player.update(dt, mousePos, gameContext)
         this.playerProjectiles.update(dt, this.player.position, gameContext)
         this.enemyDirector.update(dt, gameContext)
