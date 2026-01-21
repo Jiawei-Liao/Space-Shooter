@@ -1,13 +1,45 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Space Shooter</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Space Shooter</title>
+</head>
+
+<body>
+  <div id="app"></div>
+  <div id="ui-layer" style="display: none;">
+    <div id="title-screen">
+      <h1 class="game-title">SPACE SHOOTER</h1>
+      <button id="play-btn" class="ui-btn btn-primary play-btn">PLAY</button>
+      <div id="high-scores">
+        <h3>HIGH SCORES</h3>
+        <ul id="score-list"></ul>
+      </div>
+    </div>
+
+    <div id="death-screen" class="hidden">
+      <h1 class="game-over-title">YOU DIED</h1>
+      <div class="score-display">
+        <p>SCORE: <span id="final-score">0</span></p>
+        <p>WAVE: <span id="final-wave">1</span></p>
+      </div>
+      <div class="death-buttons">
+        <button id="ad-btn" class="ui-btn btn-accent">WATCH AD TO RESPAWN</button>
+        <button id="restart-btn" class="ui-btn btn-primary">PLAY AGAIN</button>
+        <button id="home-btn" class="ui-btn btn-secondary">RETURN TO TITLE</button>
+      </div>
+    </div>
+
+    <div id="ad-banner" class="banner-overlay hidden">
+      <div class="banner-content">
+        <p>Scammed. But here's 1 point instead</p>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
 </html>

@@ -95,18 +95,35 @@ export class Player extends PIXI.Container {
         return this.playerStats.invincibilityTimer > 0
     }
 
+    public get isDead(): boolean {
+        return this.playerStats.hp <= 0
+    }
+
+    public setInvincibility(duration: number) {
+        if (duration > this.playerStats.invincibilityTimer) {
+            this.playerStats.invincibilityTimer = duration
+        }
+    }
+
     public hit(damage: number = 1) {
-        if (this.isInvincible) return
+        if (this.isInvincible || this.isDead) return
 
         this.playerStats.hp -= damage
-        this.playerStats.invincibilityTimer = this.playerStats.invincibilityDuration
 
-        this.hitTimer = 0.1
-        this.hitFilter.enabled = true
-        this.hitFilter.alpha = 1.0
+        if (!this.isDead) {
+            this.setInvincibility(this.playerStats.invincibilityDuration)
+            this.hitTimer = 0.1
+            this.hitFilter.enabled = true
+            this.hitFilter.alpha = 1.0
+        } else {
+            this.hitFilter.enabled = false
+            this.sprite.alpha = 0.5
+        }
     }
 
     update(dt: number, mousePos: { x: number, y: number }, _gameContext: GameContext) {
+        if (this.isDead) return
+
         // Move
         this.x += (mousePos.x - this.x)
         this.y += (mousePos.y - this.y)

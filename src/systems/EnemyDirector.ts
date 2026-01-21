@@ -3,13 +3,15 @@ import { getSteppedValue } from '../utils/Math'
 import { ENEMY_SETS, type EnemySet, type SpawnInstruction } from './EnemySets'
 
 export class EnemyDirector {
-    public currentWave = 0
+    public currentWave = -1
     private waveTimer = 0 // Time left before spawning next wave
-    private readonly WAVE_INTERVAL = 2 // Time between waves
+    // Time between waves
+    private readonly WAVE_INTERVAL = 0.5
+    private readonly BOSS_WAVE_INTERVAL = 2
     private waveCostRemaining = 0 // Amount to spend on next wave
     private readonly ENEMY_SET_GENERATION_ATTEMPTS = 50
 
-    private readonly BOSS_WAVE_INTERVAL = 5
+    private readonly BOSS_WAVE_FREQUENCY = 5
     private readonly DEFAULT_WARP_SPEED = 1
     private readonly SLOW_WARP_SPEED = 5
     private readonly FAST_WARP_SPEED = 20
@@ -65,9 +67,10 @@ export class EnemyDirector {
         // Wait for timer before starting new wave
         if (isWaveClear) {
             this.waveTimer -= dt
+            context.player.setInvincibility(this.waveTimer + 0.5)
 
             // Speed up background during interval
-            if (this.currentWave % this.BOSS_WAVE_INTERVAL === 0) {
+            if (this.currentWave % this.BOSS_WAVE_FREQUENCY === 0) {
                 context.background.setWarpFactor(this.FAST_WARP_SPEED)
                 context.enemyProjectiles.setWarpFactor(this.FAST_WARP_SPEED)
             } else {
@@ -105,7 +108,12 @@ export class EnemyDirector {
             { minWave: 10, value: (w) => Math.pow(w, 1.5) * 10 - 170 },
         ])
         console.log(`Wave cost: ${this.waveCostRemaining}`)
-        this.waveTimer = this.WAVE_INTERVAL
+
+        if (this.currentWave % this.BOSS_WAVE_FREQUENCY === 0) {
+            this.waveTimer = this.BOSS_WAVE_INTERVAL
+        } else {
+            this.waveTimer = this.WAVE_INTERVAL
+        }
 
         // Reset pending sets
         this.pendingSets = []

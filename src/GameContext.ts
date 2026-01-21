@@ -21,12 +21,11 @@ export class GameContext {
     public enemyBlueprints: Record<string, EnemyBlueprint>
     public background: Background
 
-    constructor(app: PIXI.Application, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>) {
+    constructor(app: PIXI.Application, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>, background: Background) {
         this.app = app
 
         // Background
-        this.background = new Background()
-        app.stage.addChild(this.background)
+        this.background = background
 
         // Projectiles
         this.playerProjectiles = new ProjectileManager(app, projectileTextures, PLAYER_PROJECTILE_LIMIT)
@@ -122,7 +121,7 @@ export class GameContext {
         // Enemy Projectiles vs Player
         for (let i = activeEnemyProjectiles.length - 1; i >= 0; i--) {
             const projectile = activeEnemyProjectiles[i]
-            if (this.player.isInvincible) continue
+            if (this.player.isInvincible || this.player.isDead) continue
 
             const dx = projectile.x - this.player.x
             const dy = projectile.y - this.player.y
@@ -135,5 +134,13 @@ export class GameContext {
                 projectile.die()
             }
         }
+    }
+
+    cleanup() {
+        this.app.stage.removeChild(this.background)
+        this.app.stage.removeChild(this.player)
+        this.app.stage.removeChild(this.hud)
+
+        this.app.stage.removeChildren()
     }
 }

@@ -10,12 +10,12 @@ export class HUD extends PIXI.Container {
     private readonly BAR_HEIGHT = 16
     private readonly GAP = 2
 
-    // HP bar colours
-    private readonly HEALTHY_COLOUR = 0x00F5D4
+    // HP bar colours (Matching CSS Theme)
+    private readonly HEALTHY_COLOUR = 0x00FFFF // --colour-primary
     private readonly WARNING_RATIO = 0.5
-    private readonly WARNING_COLOUR = 0xFEE440
+    private readonly WARNING_COLOUR = 0xFFAA00 // --colour-accent
     private readonly CRITICAL_RATIO = 0.25
-    private readonly CRITICAL_COLOUR = 0xFF5400
+    private readonly CRITICAL_COLOUR = 0xFF3333 // --colour-danger
 
     constructor() {
         super()
@@ -25,10 +25,10 @@ export class HUD extends PIXI.Container {
         this.addChild(this.healthGraphics)
 
         const scoreStyle = new PIXI.TextStyle({
-            fontFamily: 'monospace',
+            fontFamily: 'Orbitron',
             fontSize: 24,
             fontWeight: 'bold',
-            fill: 0x90E0EF,
+            fill: this.HEALTHY_COLOUR,
         })
 
         this.scoreText = new PIXI.Text({ text: 'SCORE: 000000', style: scoreStyle })
@@ -53,7 +53,7 @@ export class HUD extends PIXI.Container {
         this.healthGraphics
             .roundRect(-4, -4, this.TOTAL_BAR_WIDTH + 8, this.BAR_HEIGHT + 8, 4)
             .fill({ color: 0x000000, alpha: 0.5 })
-            .stroke({ width: 2, color: 0x90E0EF, alpha: 0.3 })
+            .stroke({ width: 2, color: this.HEALTHY_COLOUR, alpha: 0.3 })
 
         // HP blocks
         for (let i = 0; i < safeMaxHp; i++) {
