@@ -4,6 +4,7 @@ import type { ProjectileStats } from './Player'
 import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
 import type { ProjectileManager } from '../systems/ProjectileManager'
 import type { Enemy } from './Enemy'
+import type { GameContext } from '../GameContext'
 
 export class Projectile extends PIXI.Sprite {
     public isActive: boolean = false
@@ -11,11 +12,13 @@ export class Projectile extends PIXI.Sprite {
     public behaviours: ProjectileBehavior[] = []
     private hitTargets: Set<Enemy> = new Set()
     private manager!: ProjectileManager
+    private isPlayerProjectiles: boolean = false
 
-    constructor(texture: PIXI.Texture) {
+    constructor(texture: PIXI.Texture, isPlayerProjectiles: boolean = false) {
         super(texture)
         this.anchor.set(0.5)
         this.visible = false
+        this.isPlayerProjectiles = isPlayerProjectiles
     }
 
     spawn(position: PIXI.PointData, texture: PIXI.Texture, projectileStats: ProjectileStats, behaviours: ProjectileBehavior[], manager: ProjectileManager) {
@@ -32,7 +35,7 @@ export class Projectile extends PIXI.Sprite {
         this.visible = true
     }
 
-    update(dt: number, warpFactor: number = 1.0) {
+    update(dt: number, gameContext: GameContext) {
         if (!this.isActive) return
 
         // Modify bullet based on behaviours
@@ -42,12 +45,12 @@ export class Projectile extends PIXI.Sprite {
 
         // Move projectile
         this.rotation = this.projectileStats.angle
-        this.x += Math.cos(this.projectileStats.angle) * this.projectileStats.speed * dt
-        this.y += Math.sin(this.projectileStats.angle) * this.projectileStats.speed * dt
+        this.x += Math.cos(this.projectileStats.angle) * this.projectileStats.projectileSpeed * dt
+        this.y += Math.sin(this.projectileStats.angle) * this.projectileStats.projectileSpeed * dt
 
-        // Apply warp effect and move down at same rate as background
-        if (warpFactor > 1.0) {
-            this.y += 50 * (warpFactor - 1.0) * dt
+        // Apply warp effect to enemy projectiles and move down at same rate as background
+        if (!this.isPlayerProjectiles) {
+            this.y += gameContext.background.backgroundSpeed * dt
         }
 
         if (isOutOfBounds(this.position)) {

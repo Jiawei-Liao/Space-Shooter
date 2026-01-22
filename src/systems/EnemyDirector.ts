@@ -72,14 +72,16 @@ export class EnemyDirector {
             // Speed up background during interval
             if (this.currentWave % this.BOSS_WAVE_FREQUENCY === 0) {
                 context.background.setWarpFactor(this.FAST_WARP_SPEED)
-                context.enemyProjectiles.setWarpFactor(this.FAST_WARP_SPEED)
             } else {
                 context.background.setWarpFactor(this.SLOW_WARP_SPEED)
-                context.enemyProjectiles.setWarpFactor(this.SLOW_WARP_SPEED)
             }
 
             if (this.waveTimer <= 0) {
                 this.startNewWave(context)
+            }
+
+            if (context.player.checkLevelUp()) {
+                console.log('TODO: Level up player')
             }
         }
 
@@ -98,7 +100,6 @@ export class EnemyDirector {
         this.currentWave++
         // Reset background speed
         context.background.setWarpFactor(this.DEFAULT_WARP_SPEED)
-        context.enemyProjectiles.setWarpFactor(this.DEFAULT_WARP_SPEED)
 
         console.log(`Starting Wave ${this.currentWave}`)
         // Wave cost scaling

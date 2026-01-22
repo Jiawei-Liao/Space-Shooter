@@ -8,6 +8,7 @@ export type EnemyBehaviorFn = (enemy: Enemy, dt: number, gameContext: GameContex
 export interface EnemyStats {
     hp: number
     scoreValue: number
+    expValue: number
 }
 export interface EnemyBlueprint {
     texture: PIXI.Texture
@@ -35,6 +36,7 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                     { minWave: 50, value: (w) => 0.7 * Math.pow(w, 1.1) },
                 ]),
                 scoreValue: 100,
+                expValue: 3
             }
         },
         shootFn: () => {
@@ -72,7 +74,7 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                                 width: 20,
                                 height: 20,
                                 sizeScale: 1,
-                                speed: 200,
+                                projectileSpeed: 200,
                                 angle: Math.PI / 2,
                                 numProjectiles: 1,
                                 pierce: 1

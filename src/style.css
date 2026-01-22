@@ -80,6 +80,7 @@ canvas {
 .hidden {
     opacity: 0;
     pointer-events: none !important;
+    visibility: hidden;
 }
 
 /* Typography */

@@ -9,7 +9,10 @@ export interface PlayerStats {
     maxHp: number,
     score: number,
     invincibilityTimer: number,
-    invincibilityDuration: number
+    invincibilityDuration: number,
+    exp: number,
+    level: number,
+    maxExp: number
 }
 
 export interface ProjectileStats {
@@ -19,7 +22,7 @@ export interface ProjectileStats {
     width: number,
     height: number
     sizeScale: number,
-    speed: number,
+    projectileSpeed: number,
     angle: number
     numProjectiles: number,
     pierce: number
@@ -47,17 +50,20 @@ export class Player extends PIXI.Container {
         maxHp: 1,
         score: 0,
         invincibilityTimer: 0,
-        invincibilityDuration: 1
+        invincibilityDuration: 1,
+        exp: 0,
+        level: 1,
+        maxExp: 10
     }
 
     public projectileStats: ProjectileStats = {
         fireTimer: 0,
-        fireRate: 0.5,
-        damage: 1,
+        fireRate: 0.1,
+        damage: 5,
         width: 15,
         height: 15,
         sizeScale: 1,
-        speed: 600,
+        projectileSpeed: 600,
         angle: -Math.PI / 2,
         numProjectiles: 1,
         pierce: 1,
@@ -89,6 +95,21 @@ export class Player extends PIXI.Container {
         this.sprite.filters = [this.hitFilter]
 
         this.addChild(this.hitbox)
+    }
+
+    public addExp(amount: number) {
+        this.playerStats.exp += amount
+    }
+
+    public checkLevelUp(): boolean {
+        if (this.playerStats.exp >= this.playerStats.maxExp) {
+            this.playerStats.exp -= this.playerStats.maxExp
+            this.playerStats.level++
+            this.playerStats.maxExp = Math.floor(10 * Math.pow(1.2, this.playerStats.level - 1))
+            console.log(this.playerStats.maxExp)
+            return true
+        }
+        return false
     }
 
     public get isInvincible(): boolean {

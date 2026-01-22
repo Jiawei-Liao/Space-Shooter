@@ -11,12 +11,14 @@ interface Star {
 
 export class Background extends PIXI.Container {
     private stars: Star[] = []
-    private warpFactor: number = 1.0
+    public warpFactor: number = 1.0
     private targetWarpFactor: number = 1.0
     private readonly STAR_COUNT = 200
     private readonly DIAMOND_CHANCE = 0.2
     private readonly CIRCLE_STAR_SIZE = 1.5
     private readonly DIAMOND_STAR_SIZE = 2.2
+    public readonly BASE_SPEED: number = 50
+    public backgroundSpeed = 50
 
     constructor() {
         super()
@@ -46,7 +48,7 @@ export class Background extends PIXI.Container {
 
             const star: Star = {
                 sprite: starGraphics,
-                baseSpeed: 50 * depth,
+                baseSpeed: this.BASE_SPEED * depth,
                 x: Math.random() * GAME_WIDTH,
                 y: Math.random() * GAME_HEIGHT,
                 scale: depth
@@ -66,12 +68,13 @@ export class Background extends PIXI.Container {
     }
 
     public update(dt: number) {
-        // Smoothly increase current warp factor to target (Same as in ProjectileManager)
+        // Smoothly increase current warp factor to target
         this.warpFactor += (this.targetWarpFactor - this.warpFactor) * 5.0 * dt
+        this.backgroundSpeed = this.BASE_SPEED * this.warpFactor
 
         for (const star of this.stars) {
             // Move star
-            star.y += star.baseSpeed * this.warpFactor * dt
+            star.y += this.backgroundSpeed * dt
 
             // Star reached the end, wrap around to a new random position
             if (star.y > GAME_HEIGHT + 100) {

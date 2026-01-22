@@ -4,13 +4,16 @@ import * as PIXI from 'pixi.js'
 export class HUD extends PIXI.Container {
     private healthGraphics: PIXI.Graphics
     private scoreText: PIXI.Text
+    private expGraphics: PIXI.Graphics
 
     // HP bar style
     private readonly TOTAL_BAR_WIDTH = 240
     private readonly BAR_HEIGHT = 16
     private readonly GAP = 2
+    private readonly BORDER_PADDING = 4
+    private readonly EXP_BAR_HEIGHT = 8
 
-    // HP bar colours (Matching CSS Theme)
+    // HP bar colours (matching CSS)
     private readonly HEALTHY_COLOUR = 0x00FFFF // --colour-primary
     private readonly WARNING_RATIO = 0.5
     private readonly WARNING_COLOUR = 0xFFAA00 // --colour-accent
@@ -24,6 +27,10 @@ export class HUD extends PIXI.Container {
         this.healthGraphics.position.set(20, 20)
         this.addChild(this.healthGraphics)
 
+        this.expGraphics = new PIXI.Graphics()
+        this.expGraphics.position.set(20, 20)
+        this.addChild(this.expGraphics)
+
         const scoreStyle = new PIXI.TextStyle({
             fontFamily: 'Orbitron',
             fontSize: 24,
@@ -36,8 +43,15 @@ export class HUD extends PIXI.Container {
         this.addChild(this.scoreText)
     }
 
-    update(hp: number, maxHp: number, score: number) {
+    update(hp: number, maxHp: number, score: number, exp: number, maxExp: number) {
         this.healthGraphics.clear()
+        this.expGraphics.clear()
+
+        const totalHeight = this.BAR_HEIGHT + 4 + this.EXP_BAR_HEIGHT
+        this.healthGraphics
+            .roundRect(-this.BORDER_PADDING, -this.BORDER_PADDING, this.TOTAL_BAR_WIDTH + this.BORDER_PADDING * 2, totalHeight + this.BORDER_PADDING * 2, 4)
+            .fill({ color: 0x000000, alpha: 0.5 })
+            .stroke({ width: 2, color: this.HEALTHY_COLOUR, alpha: 0.3 })
 
         const safeMaxHp = Math.max(1, maxHp)
         const totalGapWidth = this.GAP * (safeMaxHp - 1)
@@ -48,12 +62,6 @@ export class HUD extends PIXI.Container {
         let color = this.HEALTHY_COLOUR
         if (ratio < this.WARNING_RATIO) color = this.WARNING_COLOUR
         if (ratio < this.CRITICAL_RATIO) color = this.CRITICAL_COLOUR
-
-        // Draw HP bar
-        this.healthGraphics
-            .roundRect(-4, -4, this.TOTAL_BAR_WIDTH + 8, this.BAR_HEIGHT + 8, 4)
-            .fill({ color: 0x000000, alpha: 0.5 })
-            .stroke({ width: 2, color: this.HEALTHY_COLOUR, alpha: 0.3 })
 
         // HP blocks
         for (let i = 0; i < safeMaxHp; i++) {
@@ -72,6 +80,20 @@ export class HUD extends PIXI.Container {
                     .fill({ color: 0xFFFFFF, alpha: 0.05 })
                     .stroke({ width: 1, color: 0xFFFFFF, alpha: 0.1 })
             }
+        }
+
+        const displayExp = Math.min(exp, maxExp)
+        const expRatio = Math.max(0, displayExp / maxExp)
+        const expColor = 0xFFD700
+        const expY = this.BAR_HEIGHT + 4
+
+        this.expGraphics
+            .rect(0, expY, this.TOTAL_BAR_WIDTH, this.EXP_BAR_HEIGHT)
+            .fill({ color: 0x000000, alpha: 0.3 })
+        if (expRatio > 0) {
+            this.expGraphics
+                .rect(0, expY, this.TOTAL_BAR_WIDTH * expRatio, this.EXP_BAR_HEIGHT)
+                .fill({ color: expColor })
         }
 
         // Update score

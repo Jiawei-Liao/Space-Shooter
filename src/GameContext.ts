@@ -9,6 +9,7 @@ import { HUD } from './systems/HUD'
 import { createEnemyBlueprints, type EnemyBlueprint } from './entities/EnemyBlueprint'
 import { EnemyDirector } from './systems/EnemyDirector'
 import { Background } from './entities/Background'
+import { ExpManager } from './systems/ExpManager'
 
 export class GameContext {
     public app: PIXI.Application
@@ -20,6 +21,7 @@ export class GameContext {
     public hud: HUD
     public enemyBlueprints: Record<string, EnemyBlueprint>
     public background: Background
+    public expManager: ExpManager
 
     constructor(app: PIXI.Application, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>, background: Background) {
         this.app = app
@@ -28,7 +30,7 @@ export class GameContext {
         this.background = background
 
         // Projectiles
-        this.playerProjectiles = new ProjectileManager(app, projectileTextures, PLAYER_PROJECTILE_LIMIT)
+        this.playerProjectiles = new ProjectileManager(app, projectileTextures, PLAYER_PROJECTILE_LIMIT, true)
         this.enemyProjectiles = new ProjectileManager(app, projectileTextures, ENEMY_PROJECTILE_LIMIT)
 
         // Setup Player
@@ -42,6 +44,7 @@ export class GameContext {
         this.enemyBlueprints = createEnemyBlueprints(enemyTextures)
         this.enemyManager = new EnemyManager(app)
         this.enemyDirector = new EnemyDirector()
+        this.expManager = new ExpManager(app)
 
         this.hud = new HUD()
         app.stage.addChild(this.hud)
@@ -51,14 +54,15 @@ export class GameContext {
         this.background.update(dt)
 
         this.player.update(dt, mousePos, gameContext)
-        this.playerProjectiles.update(dt, this.player.position, gameContext)
+        this.playerProjectiles.update(dt, gameContext)
         this.enemyDirector.update(dt, gameContext)
         this.enemyManager.update(dt, gameContext)
-        this.enemyProjectiles.update(dt, this.player.position, gameContext)
+        this.enemyProjectiles.update(dt, gameContext)
+        this.expManager.update(dt, gameContext)
 
         this.checkCollisions()
 
-        this.hud.update(this.player.playerStats.hp, this.player.playerStats.maxHp, this.player.playerStats.score)
+        this.hud.update(this.player.playerStats.hp, this.player.playerStats.maxHp, this.player.playerStats.score, this.player.playerStats.exp, this.player.playerStats.maxExp)
     }
 
     checkCollisions() {
@@ -110,6 +114,8 @@ export class GameContext {
 
                     if (!enemy.isActive) {
                         this.player.playerStats.score += enemy.stats.scoreValue
+                        // Drop Exp
+                        this.expManager.spawn(enemy.x, enemy.y, enemy.stats.expValue)
                     }
                     if (!playerProjectile.isActive) {
                         break

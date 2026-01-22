@@ -67,7 +67,7 @@ export const ProjectileBehaviours = {
                 for (let i = 0; i < numShrapnel; i++) {
                     const stats = { ...context.p.projectileStats }
                     stats.angle = context.p.projectileStats.angle + (i * angleStep)
-                    stats.speed = stats.speed / 2
+                    stats.projectileSpeed = stats.projectileSpeed / 2
                     stats.width = stats.width / 2
                     stats.height = stats.height / 2
                     stats.damage = Math.ceil(stats.damage / 2)
@@ -82,9 +82,9 @@ export const ProjectileBehaviours = {
     SlowDown: (minSpeed: number = 0, dragFactor: number = 0.5): ProjectileBehavior => {
         return {
             update: ({ p, dt }) => {
-                const currentSpeed = p.projectileStats.speed
+                const currentSpeed = p.projectileStats.projectileSpeed
                 if (currentSpeed > minSpeed) {
-                    p.projectileStats.speed = Math.max(minSpeed, currentSpeed * Math.pow(dragFactor, dt))
+                    p.projectileStats.projectileSpeed = Math.max(minSpeed, currentSpeed * Math.pow(dragFactor, dt))
                 }
             }
         }
