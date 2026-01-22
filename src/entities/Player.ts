@@ -58,8 +58,8 @@ export class Player extends PIXI.Container {
 
     public projectileStats: ProjectileStats = {
         fireTimer: 0,
-        fireRate: 0.1,
-        damage: 5,
+        fireRate: 0.5,
+        damage: 1,
         width: 15,
         height: 15,
         sizeScale: 1,
