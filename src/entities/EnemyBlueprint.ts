@@ -35,7 +35,7 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                     { minWave: 30, value: (w) => w },
                     { minWave: 50, value: (w) => 0.7 * Math.pow(w, 1.1) },
                 ]),
-                scoreValue: 100,
+                scoreValue: 10,
                 expValue: 3
             }
         },
@@ -64,19 +64,18 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                             { x: enemy.x, y: enemy.y + enemy.height / 2 },
                             'enemy_bullet',
                             {
-                                fireTimer: 0,
-                                fireRate: 0,
+
                                 damage: getSteppedValue(gameContext.enemyDirector.currentWave, [
                                     { minWave: 1, value: 1 },
                                     { minWave: 10, value: 2 },
                                     { minWave: 20, value: 4 }
                                 ]),
+                                damageMultiplier: 1,
                                 width: 20,
                                 height: 20,
                                 sizeScale: 1,
                                 projectileSpeed: 200,
                                 angle: Math.PI / 2,
-                                numProjectiles: 1,
                                 pierce: 1
                             },
                             []

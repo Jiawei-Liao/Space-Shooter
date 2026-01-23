@@ -1,18 +1,22 @@
 import * as PIXI from 'pixi.js'
 import { isOutOfBounds } from '../GameConfig'
 import type { ProjectileStats } from './Player'
-import type { ProjectileBehavior } from '../systems/ProjectileBehaviours'
-import type { ProjectileManager } from '../systems/ProjectileManager'
 import type { Enemy } from './Enemy'
 import type { GameContext } from '../GameContext'
+
+import type { ProjectileManager } from '../systems/ProjectileManager'
+
+export type ProjectileSetupHook = (p: Projectile, manager: ProjectileManager) => void
 
 export class Projectile extends PIXI.Sprite {
     public isActive: boolean = false
     public projectileStats!: ProjectileStats
-    public behaviours: ProjectileBehavior[] = []
-    private hitTargets: Set<Enemy> = new Set()
-    private manager!: ProjectileManager
+    public hitTargets: Set<Enemy> = new Set()
     private isPlayerProjectiles: boolean = false
+
+    public onUpdateHooks: ((dt: number, gameContext: GameContext) => void)[] = []
+    public onHitHooks: ((enemy: Enemy, gameContext: GameContext) => void)[] = []
+    public onDestroyHooks: ((gameContext: GameContext) => void)[] = []
 
     constructor(texture: PIXI.Texture, isPlayerProjectiles: boolean = false) {
         super(texture)
@@ -21,15 +25,18 @@ export class Projectile extends PIXI.Sprite {
         this.isPlayerProjectiles = isPlayerProjectiles
     }
 
-    spawn(position: PIXI.PointData, texture: PIXI.Texture, projectileStats: ProjectileStats, behaviours: ProjectileBehavior[], manager: ProjectileManager) {
+    spawn(position: PIXI.PointData, texture: PIXI.Texture, projectileStats: ProjectileStats, setupHooks: ProjectileSetupHook[], manager: ProjectileManager) {
         this.texture = texture
         this.projectileStats = projectileStats
-        this.behaviours = behaviours
-        this.manager = manager
         this.position.set(position.x, position.y)
         this.width = projectileStats.width * projectileStats.sizeScale
         this.height = projectileStats.height * projectileStats.sizeScale
         this.hitTargets.clear()
+        this.onUpdateHooks = []
+        this.onHitHooks = []
+        this.onDestroyHooks = []
+
+        setupHooks.forEach(hook => hook(this, manager))
 
         this.isActive = true
         this.visible = true
@@ -39,8 +46,8 @@ export class Projectile extends PIXI.Sprite {
         if (!this.isActive) return
 
         // Modify bullet based on behaviours
-        for (const behaviour of this.behaviours) {
-            behaviour.update({ p: this, dt, manager: this.manager })
+        for (const hook of this.onUpdateHooks) {
+            hook(dt, gameContext)
         }
 
         // Move projectile
@@ -58,18 +65,18 @@ export class Projectile extends PIXI.Sprite {
         }
     }
 
-    hit(enemy: Enemy) {
+    hit(enemy: Enemy, gameContext: GameContext) {
         if (this.hitTargets.has(enemy)) return
 
         this.hitTargets.add(enemy)
         this.projectileStats.pierce--
 
-        for (const behaviour of this.behaviours) {
-            behaviour.onHit?.({ p: this, manager: this.manager })
+        for (const hook of this.onHitHooks) {
+            hook(enemy, gameContext)
         }
 
         if (this.projectileStats.pierce <= 0) {
-            this.die()
+            this.die(gameContext)
         }
     }
 
@@ -77,9 +84,9 @@ export class Projectile extends PIXI.Sprite {
         return this.hitTargets.has(enemy)
     }
 
-    die() {
-        for (const behaviour of this.behaviours) {
-            behaviour.onDestroy?.({ p: this, manager: this.manager })
+    die(gameContext: GameContext) {
+        for (const hook of this.onDestroyHooks) {
+            hook(gameContext)
         }
 
         this.remove()

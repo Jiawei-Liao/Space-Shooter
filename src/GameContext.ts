@@ -10,6 +10,7 @@ import { createEnemyBlueprints, type EnemyBlueprint } from './entities/EnemyBlue
 import { EnemyDirector } from './systems/EnemyDirector'
 import { Background } from './entities/Background'
 import { ExpManager } from './systems/ExpManager'
+import { UpgradeManager } from './systems/UpgradeManager'
 
 export class GameContext {
     public app: PIXI.Application
@@ -22,6 +23,7 @@ export class GameContext {
     public enemyBlueprints: Record<string, EnemyBlueprint>
     public background: Background
     public expManager: ExpManager
+    public upgradeManager: UpgradeManager
 
     constructor(app: PIXI.Application, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>, background: Background) {
         this.app = app
@@ -37,7 +39,7 @@ export class GameContext {
         this.player = new Player(playerShipTexture)
         this.player.x = GAME_WIDTH / 2
         this.player.y = GAME_HEIGHT / 2
-        this.player.onShoot = (position, projectileStats, behaviours) => this.playerProjectiles.spawn(position, 'player_bullet', projectileStats, behaviours)
+        this.player.onShoot = (position, projectileStats, setupHooks) => this.playerProjectiles.spawn(position, 'player_bullet', projectileStats, setupHooks)
         app.stage.addChild(this.player)
 
         // Setup Enemies
@@ -45,6 +47,7 @@ export class GameContext {
         this.enemyManager = new EnemyManager(app)
         this.enemyDirector = new EnemyDirector()
         this.expManager = new ExpManager(app)
+        this.upgradeManager = new UpgradeManager()
 
         this.hud = new HUD()
         app.stage.addChild(this.hud)
@@ -109,8 +112,8 @@ export class GameContext {
                 }
 
                 if (isHit) {
-                    enemy.hit(playerProjectile.projectileStats.damage)
-                    playerProjectile.hit(enemy)
+                    enemy.hit(playerProjectile.projectileStats.damage * playerProjectile.projectileStats.damageMultiplier)
+                    playerProjectile.hit(enemy, this)
 
                     if (!enemy.isActive) {
                         this.player.playerStats.score += enemy.stats.scoreValue
@@ -136,8 +139,8 @@ export class GameContext {
             const bulletRadius = projectile.width / 2
 
             if (dist < (playerRadius + bulletRadius) ** 2) {
-                this.player.hit(projectile.projectileStats.damage)
-                projectile.die()
+                this.player.hit(projectile.projectileStats.damage, this)
+                projectile.die(this)
             }
         }
     }

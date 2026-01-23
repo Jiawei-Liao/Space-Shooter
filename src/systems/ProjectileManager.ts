@@ -1,7 +1,6 @@
 import * as PIXI from 'pixi.js'
 import { GameContext } from '../GameContext'
-import { Projectile } from '../entities/Projectile'
-import type { ProjectileBehavior } from './ProjectileBehaviours'
+import { Projectile, type ProjectileSetupHook } from '../entities/Projectile'
 import type { ProjectileStats } from '../entities/Player'
 
 
@@ -19,11 +18,11 @@ export class ProjectileManager {
         }
     }
 
-    spawn(position: PIXI.PointData, type: string, projectileStats: ProjectileStats, behaviours: ProjectileBehavior[]) {
+    spawn(position: PIXI.PointData, type: string, projectileStats: ProjectileStats, setupHooks: ProjectileSetupHook[]) {
         const projectile = this.projectilePool.find(p => !p.isActive)
         if (projectile) {
             const texture = this.textures[type]
-            projectile.spawn(position, texture || PIXI.Texture.EMPTY, projectileStats, behaviours, this)
+            projectile.spawn(position, texture || PIXI.Texture.EMPTY, projectileStats, setupHooks, this)
             this.activeProjectilePool.push(projectile)
         }
     }

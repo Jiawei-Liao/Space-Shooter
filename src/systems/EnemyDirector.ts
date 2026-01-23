@@ -5,6 +5,7 @@ import { ENEMY_SETS, type EnemySet, type SpawnInstruction } from './EnemySets'
 export class EnemyDirector {
     public currentWave = -1
     private waveTimer = 0 // Time left before spawning next wave
+    public isWaveClear = false
     // Time between waves
     private readonly WAVE_INTERVAL = 0.5
     private readonly BOSS_WAVE_INTERVAL = 2
@@ -19,6 +20,13 @@ export class EnemyDirector {
     private spawnQueue: SpawnInstruction[] = []
     private pendingSets: SpawnInstruction[][] = []
     private enemySets: EnemySet[] = []
+
+    private _upgradeToBeClaimed = true
+    public upgradeToBeClaimed() {
+        const canClaim = this._upgradeToBeClaimed
+        this._upgradeToBeClaimed = false
+        return canClaim
+    }
 
     constructor() {
         this.enemySets = ENEMY_SETS
@@ -60,12 +68,12 @@ export class EnemyDirector {
         // No more pending sets
         // No more enemies in the spawn queue
         // No more active enemies alive
-        const isWaveClear = this.pendingSets.length === 0 &&
+        this.isWaveClear = this.pendingSets.length === 0 &&
             this.spawnQueue.length === 0 &&
             context.enemyManager.activeEnemies.length === 0
 
         // Wait for timer before starting new wave
-        if (isWaveClear) {
+        if (this.isWaveClear) {
             this.waveTimer -= dt
             context.player.setInvincibility(this.waveTimer + 0.5)
 
@@ -78,10 +86,6 @@ export class EnemyDirector {
 
             if (this.waveTimer <= 0) {
                 this.startNewWave(context)
-            }
-
-            if (context.player.checkLevelUp()) {
-                console.log('TODO: Level up player')
             }
         }
 
@@ -98,6 +102,12 @@ export class EnemyDirector {
 
     private startNewWave(context: GameContext) {
         this.currentWave++
+
+        // After boss wave, upgrade to be claimed
+        if (this.currentWave % this.BOSS_WAVE_FREQUENCY === 0) {
+            this._upgradeToBeClaimed = true
+        }
+
         // Reset background speed
         context.background.setWarpFactor(this.DEFAULT_WARP_SPEED)
 

@@ -1,6 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap');
 
 :root {
+    /* Game Dimensions */
+    --game-width: 600px;
+    --game-height: 1000px;
+
     /* Colours */
     --colour-primary: #00ffff;
     --colour-primary-dim: #00aaaa;
@@ -9,9 +13,16 @@
     --colour-danger-dim: #ff0000;
     --colour-secondary: #aaaaaa;
     --colour-bg: #2c3e50;
-    --colour-text: #ffffff;
+    --colour-text: white;
     --colour-white-dim: rgba(255, 255, 255, 0.1);
     --colour-yellow-score: #ffff00;
+    --colour-upgrade-background: #111827;
+    --colour-upgrade-background-hover: #1f2937;
+    --colour-common-upgrade: #9ca3af;
+    --colour-rare-upgrade: #60a5fa;
+    --colour-epic-upgrade: #a855f7;
+    --colour-legendary-upgrade: #fbbf24;
+    --colour-unique-upgrade: #f87171;
 
     /* Effects */
     --shadow-glow-primary: 0 0 20px var(--colour-primary);
@@ -39,34 +50,20 @@ body {
     color: var(--colour-text);
 }
 
-canvas {
-    display: block;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-}
-
 /* UI Layer */
 #ui-layer {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    width: var(--game-width);
+    height: var(--game-height);
     pointer-events: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
 #title-screen,
-#death-screen {
+#death-screen,
+#upgrade-menu {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     width: 100%;
-    max-width: 600px;
     height: 100%;
-    max-height: 1000px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -250,4 +247,128 @@ canvas {
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 2px;
+}
+
+/* Upgrade Menu */
+.upgrade-title {
+    color: var(--colour-accent);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px var(--colour-accent-dim);
+}
+
+.cards-container {
+    display: flex;
+    gap: 1rem;
+}
+
+.upgrade-card {
+    width: 130px;
+    height: 250px;
+    background: var(--colour-upgrade-background);
+    border: 2px solid;
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.upgrade-card:hover {
+    transform: translateY(-10px);
+    background: var(--colour-upgrade-background-hover);
+}
+
+.upgrade-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+}
+
+.upgrade-card p {
+    font-size: 0.75rem;
+    line-height: 1.4;
+    flex-grow: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    color: white;
+    width: 100%;
+    margin-bottom: 0.8rem;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+/* Upgrade Scrollbar */
+.upgrade-card p::-webkit-scrollbar {
+    width: 2px;
+    pointer-events: none;
+}
+
+.upgrade-card p::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.upgrade-card p::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.upgrade-card small {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    font-weight: bold;
+}
+
+/* Rarity Styles */
+.card-common {
+    border-color: var(--colour-common-upgrade);
+    color: var(--colour-common-upgrade);
+    box-shadow: 0 0 10px rgba(156, 163, 175, 0.3);
+}
+
+.card-common:hover {
+    box-shadow: 0 0 20px rgba(156, 163, 175, 0.6);
+}
+
+.card-rare {
+    border-color: var(--colour-rare-upgrade);
+    color: var(--colour-rare-upgrade);
+    box-shadow: 0 0 15px rgba(96, 165, 250, 0.3);
+}
+
+.card-rare:hover {
+    box-shadow: 0 0 25px rgba(96, 165, 250, 0.6);
+}
+
+.card-epic {
+    border-color: var(--colour-epic-upgrade);
+    color: var(--colour-epic-upgrade);
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+}
+
+.card-epic:hover {
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.6);
+}
+
+.card-legendary {
+    border-color: var(--colour-legendary-upgrade);
+    color: var(--colour-legendary-upgrade);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+}
+
+.card-legendary:hover {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.8);
+}
+
+.card-unique {
+    border-color: var(--colour-unique-upgrade);
+    color: var(--colour-unique-upgrade);
+    box-shadow: 0 0 20px rgba(248, 113, 113, 0.3);
+}
+
+.card-unique:hover {
+    box-shadow: 0 0 30px rgba(248, 113, 113, 0.6);
 }

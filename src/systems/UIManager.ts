@@ -1,7 +1,8 @@
 export const GameState = {
     TITLE: 'TITLE',
     PLAYING: 'PLAYING',
-    GAME_OVER: 'GAME_OVER'
+    GAME_OVER: 'GAME_OVER',
+    UPGRADE: 'UPGRADE'
 } as const
 
 export type GameState = typeof GameState[keyof typeof GameState]
@@ -15,6 +16,8 @@ export class UIManager {
     private scoreList: HTMLElement
     private finalScoreEl: HTMLElement
     private finalWaveEl: HTMLElement
+    private upgradeMenu: HTMLElement
+    private upgradeCardsContainer: HTMLElement
 
     // Buttons
     private startBtn: HTMLElement
@@ -31,6 +34,8 @@ export class UIManager {
         this.scoreList = document.getElementById('score-list')!
         this.finalScoreEl = document.getElementById('final-score')!
         this.finalWaveEl = document.getElementById('final-wave')!
+        this.upgradeMenu = document.getElementById('upgrade-menu')!
+        this.upgradeCardsContainer = document.getElementById('upgrade-cards')!
 
         this.startBtn = document.getElementById('play-btn')!
         this.restartBtn = document.getElementById('restart-btn')!
@@ -54,6 +59,7 @@ export class UIManager {
             this.titleScreen.classList.add('hidden')
             this.deathScreen.classList.add('hidden')
             this.adPopup.classList.add('hidden')
+            this.upgradeMenu.classList.add('hidden')
         } else if (state === GameState.GAME_OVER) {
             this.deathScreen.classList.remove('hidden')
             // Reset ad button functionality visually
@@ -98,6 +104,29 @@ export class UIManager {
             ]
             window.open(adLinks[Math.floor(Math.random() * adLinks.length)], '_blank')
             callback()
+        })
+    }
+
+    public showUpgradeMenu(upgrades: any[], onSelect: (upgrade: any) => void) {
+
+        this.upgradeMenu!.classList.remove('hidden')
+        this.upgradeCardsContainer!.innerHTML = ''
+
+        upgrades.forEach((upgrade) => {
+            const card = document.createElement('div')
+            card.className = `upgrade-card card-${upgrade.rarity}`
+
+            card.innerHTML = `
+                <h3>${upgrade.name}</h3>
+                <p>${upgrade.description}</p>
+                <small>${upgrade.unique ? 'UNIQUE' : ''}</small>
+                `
+            card.addEventListener('click', () => {
+                this.upgradeMenu!.classList.add('hidden')
+                onSelect(upgrade)
+            })
+
+            this.upgradeCardsContainer!.appendChild(card)
         })
     }
 }

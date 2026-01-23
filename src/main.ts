@@ -11,6 +11,7 @@ import { HighScoreManager, type HighScore } from './systems/HighScoreManager'
 
 import ship from './assets/ship.png'
 import { loadAssets } from './utils/AssetLoader'
+import type { UpgradeSource } from './systems/UpgradeManager'
 
 async function start() {
     const app = new PIXI.Application()
@@ -45,6 +46,7 @@ async function start() {
     let currentRunEntry: HighScore | null = null
 
     function setGameState(state: GameState) {
+        const previousState = currentState
         currentState = state
         uiManager.setGameState(state)
 
@@ -61,6 +63,9 @@ async function start() {
                 gameContext = null
             }
         } else if (state === GameState.PLAYING) {
+            // If returning from upgrade menu, resume existing game
+            if (previousState === GameState.UPGRADE) return
+
             if (gameContext) gameContext.cleanup()
             app.stage.addChildAt(background, 0)
             gameContext = new GameContext(app, playerShipTexture, projectileTextures, enemyTextures, background)
@@ -100,12 +105,20 @@ async function start() {
 
             // Update persistence
             highScoreManager.addScore(currentRunEntry)
-            // Re-render if we were on title, but we are on death screen so no need to render list yet
         }
     })
 
     // Initial State
     setGameState(GameState.TITLE)
+
+    function triggerUpgrade(upgradeSource: UpgradeSource) {
+        setGameState(GameState.UPGRADE)
+        const options = gameContext!.upgradeManager.getUpgradeOptions(gameContext!, upgradeSource)
+        uiManager.showUpgradeMenu(options, (selectedUpgrade) => {
+            gameContext!.upgradeManager.applyUpgrade(selectedUpgrade, gameContext!)
+            setGameState(GameState.PLAYING)
+        })
+    }
 
     // Game Loop
     app.ticker.add((time) => {
@@ -113,11 +126,23 @@ async function start() {
 
         if (currentState === GameState.TITLE) {
             background.update(dt)
-        } else if (gameContext) {
+        } else if (currentState === GameState.PLAYING && gameContext) {
             gameContext.update(dt, mousePos, gameContext)
 
-            if (currentState === GameState.PLAYING && gameContext.player.isDead) {
+            if (gameContext.player.isDead) {
                 setGameState(GameState.GAME_OVER)
+            } else {
+                // Upgrades can only be claimed after wave is cleared
+                if (gameContext.enemyDirector.isWaveClear) {
+                    // Check has upgrade to be claimed (after boss wave cleared)
+                    if (gameContext.enemyDirector.upgradeToBeClaimed()) {
+                        triggerUpgrade('bossWave')
+                    }
+                    // Check Level Up
+                    if (gameContext.player.checkLevelUp()) {
+                        triggerUpgrade('levelUp')
+                    }
+                }
             }
         }
     })
