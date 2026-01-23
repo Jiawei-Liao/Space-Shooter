@@ -9,11 +9,11 @@ export class ProjectileManager {
     private projectilePool: Projectile[] = []
     public activeProjectilePool: Projectile[] = []
 
-    constructor(app: PIXI.Application, textures: Record<string, PIXI.Texture>, projectileLimit: number, isPlayerProjectiles: boolean = false) {
+    constructor(container: PIXI.Container, textures: Record<string, PIXI.Texture>, projectileLimit: number, isPlayerProjectiles: boolean = false) {
         this.textures = textures
         for (let i = 0; i < projectileLimit; i++) {
             const p = new Projectile(PIXI.Texture.EMPTY, isPlayerProjectiles)
-            app.stage.addChild(p)
+            container.addChild(p)
             this.projectilePool.push(p)
         }
     }

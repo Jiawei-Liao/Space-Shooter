@@ -8,10 +8,10 @@ export class EnemyManager {
     private enemyPool: Enemy[] = []
     public activeEnemies: Enemy[] = []
 
-    constructor(app: PIXI.Application) {
+    constructor(container: PIXI.Container) {
         for (let i = 0; i < ENEMY_LIMIT; i++) {
             const enemy = new Enemy()
-            app.stage.addChild(enemy)
+            container.addChild(enemy)
             this.enemyPool.push(enemy)
         }
     }

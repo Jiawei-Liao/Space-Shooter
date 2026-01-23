@@ -31,22 +31,35 @@ export class GameContext {
         // Background
         this.background = background
 
+        // Layers
+        const playerShipLayer = new PIXI.Container()
+        const enemyShipLayer = new PIXI.Container()
+        const playerProjectileLayer = new PIXI.Container()
+        const enemyProjectileLayer = new PIXI.Container()
+        const expLayer = new PIXI.Container()
+
+        app.stage.addChild(playerShipLayer)
+        app.stage.addChild(enemyShipLayer)
+        app.stage.addChild(playerProjectileLayer)
+        app.stage.addChild(enemyProjectileLayer)
+        app.stage.addChild(expLayer)
+
         // Projectiles
-        this.playerProjectiles = new ProjectileManager(app, projectileTextures, PLAYER_PROJECTILE_LIMIT, true)
-        this.enemyProjectiles = new ProjectileManager(app, projectileTextures, ENEMY_PROJECTILE_LIMIT)
+        this.playerProjectiles = new ProjectileManager(playerProjectileLayer, projectileTextures, PLAYER_PROJECTILE_LIMIT, true)
+        this.enemyProjectiles = new ProjectileManager(enemyProjectileLayer, projectileTextures, ENEMY_PROJECTILE_LIMIT)
 
         // Setup Player
         this.player = new Player(playerShipTexture)
         this.player.x = GAME_WIDTH / 2
         this.player.y = GAME_HEIGHT / 2
         this.player.onShoot = (position, projectileStats, setupHooks) => this.playerProjectiles.spawn(position, 'player_bullet', projectileStats, setupHooks)
-        app.stage.addChild(this.player)
+        playerShipLayer.addChild(this.player)
 
         // Setup Enemies
         this.enemyBlueprints = createEnemyBlueprints(enemyTextures)
-        this.enemyManager = new EnemyManager(app)
+        this.enemyManager = new EnemyManager(enemyShipLayer)
         this.enemyDirector = new EnemyDirector()
-        this.expManager = new ExpManager(app)
+        this.expManager = new ExpManager(expLayer)
         this.upgradeManager = new UpgradeManager()
 
         this.hud = new HUD()
@@ -147,7 +160,6 @@ export class GameContext {
 
     cleanup() {
         this.app.stage.removeChild(this.background)
-        this.app.stage.removeChild(this.player)
         this.app.stage.removeChild(this.hud)
 
         this.app.stage.removeChildren()

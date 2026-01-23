@@ -9,9 +9,9 @@ export class ExpManager {
     private activeParticles: ExpParticle[] = []
     private readonly INITIAL_POOL_SIZE = PARTICLE_POOL_SIZE
 
-    constructor(app: PIXI.Application) {
+    constructor(container: PIXI.Container) {
         this.container = new PIXI.Container()
-        app.stage.addChild(this.container)
+        container.addChild(this.container)
 
         for (let i = 0; i < this.INITIAL_POOL_SIZE; i++) {
             this.createParticle()
