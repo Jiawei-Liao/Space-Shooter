@@ -1,7 +1,8 @@
 import * as PIXI from 'pixi.js'
 import { GameContext } from '../GameContext'
-import { Projectile, type ProjectileSetupHook } from '../entities/Projectile'
-import type { ProjectileStats } from '../entities/Player'
+import { Projectile } from '../entities/Projectile'
+import type { ProjectileStats } from '../types/Projectile'
+import type { ProjectileSetupHook } from '../types/Upgrade'
 
 
 export class ProjectileManager {

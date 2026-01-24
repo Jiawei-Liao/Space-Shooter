@@ -1,7 +1,7 @@
 import * as PIXI from 'pixi.js'
-import type { EnemyBehaviorFn, EnemyBlueprint, EnemyStats } from './EnemyBlueprint'
 import { GameContext } from '../GameContext'
 import { getHitFlashAlpha } from '../utils/Math'
+import type { EnemyBehaviorFn, EnemyBlueprint, EnemyStats } from '../types/Enemy'
 
 export class Enemy extends PIXI.Container {
     public sprite: PIXI.Sprite

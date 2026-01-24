@@ -1,5 +1,5 @@
 import { GameContext } from '../GameContext'
-import type { Upgrade, UpgradeRarity } from './Upgrades'
+import type { Upgrade, UpgradeRarity } from '../types/Upgrade'
 import { UPGRADES } from './Upgrades'
 
 export type UpgradeSource = 'levelUp' | 'bossWave'

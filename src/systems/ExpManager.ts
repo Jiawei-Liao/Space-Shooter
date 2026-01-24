@@ -1,7 +1,8 @@
 import * as PIXI from 'pixi.js'
-import { ExpParticle, EXP_TIERS, type ExpTier } from '../entities/ExpParticle'
 import { GameContext } from '../GameContext'
 import { PARTICLE_POOL_SIZE } from '../GameConfig'
+import { ExpParticle } from '../entities/ExpParticle'
+import { EXP_TIERS, type ExpTier } from '../types/Exp'
 
 export class ExpManager {
     private container: PIXI.Container

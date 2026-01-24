@@ -2,7 +2,7 @@ import * as PIXI from 'pixi.js'
 import { ENEMY_LIMIT } from '../GameConfig'
 import { GameContext } from '../GameContext'
 import { Enemy } from '../entities/Enemy'
-import type { EnemyBehaviorFn, EnemyBlueprint } from '../entities/EnemyBlueprint'
+import type { EnemyBehaviorFn, EnemyBlueprint } from '../types/Enemy'
 
 export class EnemyManager {
     private enemyPool: Enemy[] = []

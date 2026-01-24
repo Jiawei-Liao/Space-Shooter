@@ -1,12 +1,10 @@
 import * as PIXI from 'pixi.js'
 import { isOutOfBounds } from '../GameConfig'
-import type { ProjectileStats } from './Player'
 import type { Enemy } from './Enemy'
 import type { GameContext } from '../GameContext'
-
 import type { ProjectileManager } from '../systems/ProjectileManager'
-
-export type ProjectileSetupHook = (p: Projectile, manager: ProjectileManager) => void
+import type { ProjectileStats } from '../types/Projectile'
+import type { ProjectileSetupHook } from '../types/Upgrade'
 
 export class Projectile extends PIXI.Sprite {
     public isActive: boolean = false

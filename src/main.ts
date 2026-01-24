@@ -120,21 +120,24 @@ async function start() {
 
         if (currentState === GameState.TITLE) {
             background.update(dt)
-        } else if (currentState === GameState.PLAYING && gameContext) {
+        } else if ((currentState === GameState.PLAYING || currentState === GameState.GAME_OVER) && gameContext) {
+            // Allow the game to continue in the background while dead
             gameContext.update(dt, gameContext)
 
-            if (gameContext.player.isDead) {
-                setGameState(GameState.GAME_OVER)
-            } else {
-                // Upgrades can only be claimed after wave is cleared
-                if (gameContext.enemyDirector.isWaveClear) {
-                    // Check has upgrade to be claimed (after boss wave cleared)
-                    if (gameContext.enemyDirector.upgradeToBeClaimed()) {
-                        triggerUpgrade('bossWave')
-                    }
-                    // Check Level Up
-                    if (gameContext.player.checkLevelUp()) {
-                        triggerUpgrade('levelUp')
+            if (currentState === GameState.PLAYING) {
+                if (gameContext.player.isDead) {
+                    setGameState(GameState.GAME_OVER)
+                } else {
+                    // Upgrades can only be claimed after wave is cleared
+                    if (gameContext.enemyDirector.isWaveClear) {
+                        // Check has upgrade to be claimed (after boss wave cleared)
+                        if (gameContext.enemyDirector.claimUpgrade()) {
+                            triggerUpgrade('bossWave')
+                        }
+                        // Check Level Up
+                        if (gameContext.player.checkLevelUp()) {
+                            triggerUpgrade('levelUp')
+                        }
                     }
                 }
             }

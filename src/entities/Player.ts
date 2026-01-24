@@ -1,60 +1,11 @@
 import * as PIXI from 'pixi.js'
-import { type ProjectileSetupHook } from './Projectile'
 import { GameContext } from '../GameContext'
 import { getHitFlashAlpha } from '../utils/Math'
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
-
-type StatConstraint = {
-    min?: number
-    max?: number
-}
-
-export type ModifyerType = 'ADDITIVE' | 'SUBTRACTIVE' | 'MULTIPLIER'
-
-export interface PlayerStats {
-    hp: number,
-    maxHp: number,
-    score: number,
-    invincibilityTimer: number,
-    invincibilityDuration: number,
-    exp: number,
-    level: number,
-    maxExp: number,
-    baseAttackSpeed: number,
-    bonusAttackSpeed: number,
-    attackSpeedMultiplier: number,
-    numProjectiles: number,
-    maxProjectilesPerWave: number
-}
-
-const PLAYER_STAT_CONSTRAINTS: Partial<Record<keyof PlayerStats, StatConstraint>> = {
-    maxHp: { min: 1 },
-    hp: { min: 1 },
-    baseAttackSpeed: { min: 0.1 },
-    attackSpeedMultiplier: { min: 0.1 },
-    numProjectiles: { min: 1 },
-    maxProjectilesPerWave: { min: 1 }
-}
-
-export interface ProjectileStats {
-    damage: number,
-    damageMultiplier: number,
-    width: number,
-    height: number
-    sizeScale: number,
-    projectileSpeed: number,
-    angle: number
-    pierce: number
-}
-
-const PROJECTILE_STAT_CONSTRAINTS: Partial<Record<keyof ProjectileStats, StatConstraint>> = {
-    damage: { min: 0 },
-    damageMultiplier: { min: 0.1 },
-    width: { min: 1 },
-    height: { min: 1 },
-    sizeScale: { min: 0.1 },
-    pierce: { min: 1 }
-}
+import { PROJECTILE_STAT_CONSTRAINTS, type ProjectileStats } from '../types/Projectile'
+import { PLAYER_STAT_CONSTRAINTS, type PlayerStats } from '../types/Player'
+import type { Hook, ProjectileSetupHook } from '../types/Upgrade'
+import type { ModifyerType, StatConstraint } from '../types/Stats'
 
 interface QueuedShot {
     offsetX: number,
@@ -65,11 +16,6 @@ interface QueuedShot {
 
 export interface DamageEvent {
     damage: number
-}
-
-export interface Hook<T> {
-    id: string,
-    hook: T
 }
 
 export class Player extends PIXI.Container {

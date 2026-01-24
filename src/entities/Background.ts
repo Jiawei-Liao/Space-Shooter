@@ -4,21 +4,40 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../GameConfig'
 interface Star {
     sprite: PIXI.Graphics
     baseSpeed: number
-    x: number
-    y: number
-    scale: number
+    depth: number
+}
+
+interface StarConfig {
+    weight: number,
+    graphic: PIXI.GraphicsContext
 }
 
 export class Background extends PIXI.Container {
     private stars: Star[] = []
-    public warpFactor: number = 1.0
+    warpFactor: number = 1.0
     private targetWarpFactor: number = 1.0
-    private readonly STAR_COUNT = 200
-    private readonly DIAMOND_CHANCE = 0.2
-    private readonly CIRCLE_STAR_SIZE = 1.5
-    private readonly DIAMOND_STAR_SIZE = 2.2
     public readonly BASE_SPEED: number = 50
-    public backgroundSpeed = 50
+    backgroundSpeed = 50
+
+    private readonly STAR_CONFIG: StarConfig[] = [
+        { // Circle star
+            weight: 80,
+            graphic: new PIXI.GraphicsContext().circle(0, 0, 1.5).fill({ color: 0xffffff, alpha: 0.5 })
+        },
+        { // Diamond star
+            weight: 20,
+            graphic: new PIXI.GraphicsContext()
+                .moveTo(0, -2.2)
+                .lineTo(2.2, 0)
+                .lineTo(0, 2.2)
+                .lineTo(-2.2, 0)
+                .closePath()
+                .fill({ color: 0xffffff, alpha: 0.8 })
+        }
+    ]
+
+    private readonly STAR_COUNT = 200
+    private readonly SCREEN_Y_OFFSET = 100
 
     constructor() {
         super()
@@ -26,40 +45,40 @@ export class Background extends PIXI.Container {
     }
 
     private createStars() {
-        for (let i = 0; i < this.STAR_COUNT; i++) {
-            const isDiamond = Math.random() < this.DIAMOND_CHANCE
+        const totalWeight = this.STAR_CONFIG.reduce((sum, c) => sum + c.weight, 0)
 
-            const starGraphics = new PIXI.Graphics()
+        for (let i = 0; i < this.STAR_COUNT; i++) {
+            // Randomly choose a star type
+            const random = Math.random() * totalWeight
+            let currentWeight = 0
+
+            let selectedStar = this.STAR_CONFIG[0]
+
+            for (const star of this.STAR_CONFIG) {
+                currentWeight += star.weight
+                if (random <= currentWeight) {
+                    selectedStar = star
+                    break
+                }
+            }
+
 
             // Depth factor (0.5 to 1.5) - affects speed and size
             const depth = 0.5 + Math.random()
 
-            if (isDiamond) {
-                starGraphics.moveTo(0, -this.DIAMOND_STAR_SIZE)
-                starGraphics.lineTo(this.DIAMOND_STAR_SIZE, 0)
-                starGraphics.lineTo(0, this.DIAMOND_STAR_SIZE)
-                starGraphics.lineTo(-this.DIAMOND_STAR_SIZE, 0)
-                starGraphics.closePath()
-                starGraphics.fill({ color: 0xffffff, alpha: 0.8 * depth })
-            } else {
-                starGraphics.circle(0, 0, this.CIRCLE_STAR_SIZE)
-                starGraphics.fill({ color: 0xffffff, alpha: 0.5 * depth })
-            }
-
-            const star: Star = {
-                sprite: starGraphics,
-                baseSpeed: this.BASE_SPEED * depth,
-                x: Math.random() * GAME_WIDTH,
-                y: Math.random() * GAME_HEIGHT,
-                scale: depth
-            }
-
-            starGraphics.x = star.x
-            starGraphics.y = star.y
-            starGraphics.scale.set(star.scale)
+            // Create star
+            const starGraphics = new PIXI.Graphics(selectedStar.graphic)
+            starGraphics.x = Math.random() * GAME_WIDTH
+            starGraphics.y = Math.random() * (GAME_HEIGHT + this.SCREEN_Y_OFFSET * 2) - this.SCREEN_Y_OFFSET
+            starGraphics.scale.set(depth)
 
             this.addChild(starGraphics)
-            this.stars.push(star)
+
+            this.stars.push({
+                sprite: starGraphics,
+                baseSpeed: this.BASE_SPEED * depth,
+                depth: depth
+            })
         }
     }
 
@@ -74,20 +93,16 @@ export class Background extends PIXI.Container {
 
         for (const star of this.stars) {
             // Move star
-            star.y += this.backgroundSpeed * dt
+            star.sprite.y += this.backgroundSpeed * dt
 
             // Star reached the end, wrap around to a new random position
-            if (star.y > GAME_HEIGHT + 100) {
-                star.y = Math.random() * 40 - 50
-                star.x = Math.random() * GAME_WIDTH
+            if (star.sprite.y > GAME_HEIGHT + this.SCREEN_Y_OFFSET) {
+                star.sprite.y = -this.SCREEN_Y_OFFSET
+                star.sprite.x = Math.random() * GAME_WIDTH
             }
 
-            // Update sprite position
-            star.sprite.y = star.y
-            star.sprite.x = star.x
-
             // Stretch stars based on warp factor
-            star.sprite.scale.y = Math.max(1, this.warpFactor * star.scale)
+            star.sprite.scale.y = Math.max(1, this.warpFactor * star.depth)
         }
     }
 }

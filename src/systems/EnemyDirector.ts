@@ -1,11 +1,12 @@
 import { GameContext } from '../GameContext'
+import type { EnemySet, SpawnInstruction } from '../types/Enemy'
 import { getSteppedValue } from '../utils/Math'
-import { ENEMY_SETS, type EnemySet, type SpawnInstruction } from './EnemySets'
+import { ENEMY_SETS } from './EnemySets'
 
 export class EnemyDirector {
-    public currentWave = -1
+    currentWave = -1
     private waveTimer = 0 // Time left before spawning next wave
-    public isWaveClear = false
+    isWaveClear = false
     // Time between waves
     private readonly WAVE_INTERVAL = 0.5
     private readonly BOSS_WAVE_INTERVAL = 2
@@ -21,10 +22,10 @@ export class EnemyDirector {
     private pendingSets: SpawnInstruction[][] = []
     private enemySets: EnemySet[] = []
 
-    private _upgradeToBeClaimed = true
-    public upgradeToBeClaimed() {
-        const canClaim = this._upgradeToBeClaimed
-        this._upgradeToBeClaimed = false
+    private upgradeAvailable = true
+    claimUpgrade() {
+        const canClaim = this.upgradeAvailable
+        this.upgradeAvailable = false
         return canClaim
     }
 
@@ -105,7 +106,7 @@ export class EnemyDirector {
 
         // After boss wave, upgrade to be claimed
         if (this.currentWave % this.BOSS_WAVE_FREQUENCY === 0) {
-            this._upgradeToBeClaimed = true
+            this.upgradeAvailable = true
         }
 
         // Reset background speed

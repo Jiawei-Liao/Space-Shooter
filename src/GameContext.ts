@@ -6,12 +6,13 @@ import { Player } from './entities/Player'
 import { ProjectileManager } from './systems/ProjectileManager'
 import { EnemyManager } from './systems/EnemyManager'
 import { HUD } from './systems/HUD'
-import { createEnemyBlueprints, type EnemyBlueprint } from './entities/EnemyBlueprint'
 import { EnemyDirector } from './systems/EnemyDirector'
 import { Background } from './entities/Background'
 import { ExpManager } from './systems/ExpManager'
 import { UpgradeManager } from './systems/UpgradeManager'
 import { InputManager } from './systems/InputManager'
+import type { EnemyBlueprint } from './types/Enemy'
+import { createEnemyBlueprints } from './entities/EnemyBlueprint'
 
 export class GameContext {
     public app: PIXI.Application

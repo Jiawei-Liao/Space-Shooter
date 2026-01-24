@@ -1,26 +1,7 @@
-import { GameContext } from '../GameContext'
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
-import type { EnemyBlueprint, EnemyBehaviorFn } from '../entities/EnemyBlueprint'
+import type { EnemySet, SpawnInstruction } from '../types/Enemy'
 import { getSteppedValue } from '../utils/Math'
 import { randomWalkBehaviour, moveToBoundsBehaviour } from './EnemyMoveBehaviours'
-
-export interface SpawnInstruction {
-    blueprint: EnemyBlueprint
-    x: number
-    y: number
-    delay: number
-    moveFn: EnemyBehaviorFn
-    setId?: string
-}
-
-export interface EnemySet {
-    setId?: string
-    weight: number
-    cost: number
-    minWave?: number
-    maxWave?: number
-    generateInstructions: (gameContext: GameContext) => SpawnInstruction[]
-}
 
 export const ENEMY_SETS: EnemySet[] = [
     {

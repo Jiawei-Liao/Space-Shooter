@@ -1,18 +1,5 @@
-import { GameContext } from '../GameContext'
 import { getWallHit } from '../GameConfig'
-
-export type UpgradeRarity = 'common' | 'rare' | 'epic' | 'legendary'
-
-export interface Upgrade {
-    id: string
-    name: string
-    description: string
-    rarity: UpgradeRarity
-    unique: boolean
-    weight: number
-    onApply: (context: GameContext) => void
-    canAppear?: (context: GameContext) => boolean
-}
+import type { Upgrade } from '../types/Upgrade'
 
 // Base weight is 10
 
