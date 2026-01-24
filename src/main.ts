@@ -8,6 +8,7 @@ import { GameState } from './systems/UIManager'
 
 import { UIManager } from './systems/UIManager'
 import { HighScoreManager, type HighScore } from './systems/HighScoreManager'
+import { InputManager } from './systems/InputManager'
 
 import ship from './assets/ship.png'
 import { loadAssets } from './utils/AssetLoader'
@@ -36,13 +37,13 @@ async function start() {
     // Systems
     const uiManager = new UIManager()
     const highScoreManager = new HighScoreManager()
+    const inputManager = new InputManager(app.canvas)
 
     // Game context
     let gameContext: GameContext | null = null
 
     // State
     let currentState: GameState = GameState.TITLE
-    let mousePos = new PIXI.Point(GAME_WIDTH / 2, GAME_HEIGHT / 2)
     let currentRunEntry: HighScore | null = null
 
     function setGameState(state: GameState) {
@@ -68,7 +69,7 @@ async function start() {
 
             if (gameContext) gameContext.cleanup()
             app.stage.addChildAt(background, 0)
-            gameContext = new GameContext(app, playerShipTexture, projectileTextures, enemyTextures, background)
+            gameContext = new GameContext(app, inputManager, playerShipTexture, projectileTextures, enemyTextures, background)
         } else if (state === GameState.GAME_OVER) {
             if (gameContext) {
                 const score = gameContext.player.playerStats.score
@@ -82,13 +83,6 @@ async function start() {
             }
         }
     }
-
-    // Input Handling
-    app.canvas.addEventListener('mousemove', (e) => {
-        const rect = app.canvas.getBoundingClientRect()
-        mousePos.x = e.clientX - rect.left
-        mousePos.y = e.clientY - rect.top
-    })
 
     // Bind UI Events
     uiManager.onStart(() => setGameState(GameState.PLAYING))
@@ -127,7 +121,7 @@ async function start() {
         if (currentState === GameState.TITLE) {
             background.update(dt)
         } else if (currentState === GameState.PLAYING && gameContext) {
-            gameContext.update(dt, mousePos, gameContext)
+            gameContext.update(dt, gameContext)
 
             if (gameContext.player.isDead) {
                 setGameState(GameState.GAME_OVER)

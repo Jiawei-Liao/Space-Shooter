@@ -11,6 +11,7 @@ import { EnemyDirector } from './systems/EnemyDirector'
 import { Background } from './entities/Background'
 import { ExpManager } from './systems/ExpManager'
 import { UpgradeManager } from './systems/UpgradeManager'
+import { InputManager } from './systems/InputManager'
 
 export class GameContext {
     public app: PIXI.Application
@@ -24,9 +25,11 @@ export class GameContext {
     public background: Background
     public expManager: ExpManager
     public upgradeManager: UpgradeManager
+    public inputManager: InputManager
 
-    constructor(app: PIXI.Application, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>, background: Background) {
+    constructor(app: PIXI.Application, inputManager: InputManager, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>, background: Background) {
         this.app = app
+        this.inputManager = inputManager
 
         // Background
         this.background = background
@@ -66,10 +69,10 @@ export class GameContext {
         app.stage.addChild(this.hud)
     }
 
-    update(dt: number, mousePos: PIXI.PointData, gameContext: GameContext) {
+    update(dt: number, gameContext: GameContext) {
         this.background.update(dt)
 
-        this.player.update(dt, mousePos, gameContext)
+        this.player.update(dt, gameContext)
         this.playerProjectiles.update(dt, gameContext)
         this.enemyDirector.update(dt, gameContext)
         this.enemyManager.update(dt, gameContext)

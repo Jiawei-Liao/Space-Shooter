@@ -2,6 +2,7 @@ import * as PIXI from 'pixi.js'
 import { type ProjectileSetupHook } from './Projectile'
 import { GameContext } from '../GameContext'
 import { getHitFlashAlpha } from '../utils/Math'
+import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
 
 export interface PlayerStats {
     hp: number,
@@ -179,12 +180,32 @@ export class Player extends PIXI.Container {
         }
     }
 
-    update(dt: number, mousePos: { x: number, y: number }, gameContext: GameContext) {
+    update(dt: number, gameContext: GameContext) {
         if (this.isDead) return
 
-        // Move
+        // Movement
+        const mousePos = gameContext.inputManager.mousePos
         this.x += (mousePos.x - this.x)
         this.y += (mousePos.y - this.y)
+
+        // Clamp to game bounds
+        if (this.x < 0) this.x = 0
+        if (this.x > GAME_WIDTH) this.x = GAME_WIDTH
+        if (this.y < 0) this.y = 0
+        if (this.y > GAME_HEIGHT) this.y = GAME_HEIGHT
+
+        // Inputs
+        for (const intent of gameContext.inputManager.getIntents()) {
+            if (intent === 'ACTIVATE_ITEM') {
+                console.log('TODO: ACTIVATE_ITEM')
+            }
+            if (intent === 'NEXT_ITEM') {
+                console.log('TODO: NEXT_ITEM')
+            }
+            if (intent === 'PREVIOUS_ITEM') {
+                console.log('TODO: PREVIOUS_ITEM')
+            }
+        }
 
         // Hit tint filter
         if (this.hitTimer > 0) {
