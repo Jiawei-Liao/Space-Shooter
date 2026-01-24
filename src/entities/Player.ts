@@ -4,6 +4,13 @@ import { GameContext } from '../GameContext'
 import { getHitFlashAlpha } from '../utils/Math'
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
 
+type StatConstraint = {
+    min?: number
+    max?: number
+}
+
+export type ModifyerType = 'ADDITIVE' | 'SUBTRACTIVE' | 'MULTIPLIER'
+
 export interface PlayerStats {
     hp: number,
     maxHp: number,
@@ -17,6 +24,16 @@ export interface PlayerStats {
     bonusAttackSpeed: number,
     attackSpeedMultiplier: number,
     numProjectiles: number,
+    maxProjectilesPerWave: number
+}
+
+const PLAYER_STAT_CONSTRAINTS: Partial<Record<keyof PlayerStats, StatConstraint>> = {
+    maxHp: { min: 1 },
+    hp: { min: 1 },
+    baseAttackSpeed: { min: 0.1 },
+    attackSpeedMultiplier: { min: 0.1 },
+    numProjectiles: { min: 1 },
+    maxProjectilesPerWave: { min: 1 }
 }
 
 export interface ProjectileStats {
@@ -28,6 +45,15 @@ export interface ProjectileStats {
     projectileSpeed: number,
     angle: number
     pierce: number
+}
+
+const PROJECTILE_STAT_CONSTRAINTS: Partial<Record<keyof ProjectileStats, StatConstraint>> = {
+    damage: { min: 0 },
+    damageMultiplier: { min: 0.1 },
+    width: { min: 1 },
+    height: { min: 1 },
+    sizeScale: { min: 0.1 },
+    pierce: { min: 1 }
 }
 
 interface QueuedShot {
@@ -56,6 +82,7 @@ export class Player extends PIXI.Container {
     private queuedShots: QueuedShot[] = []
     private readonly QUEUED_SHOTS_INTERVAL = 0.03
     public readonly HITBOX_RADIUS: number = 4
+    private readonly MIN_ATTACK_SPEED: number = 0.1 // Player has to be able to attack
 
     public playerStats: PlayerStats = {
         hp: 1,
@@ -70,6 +97,7 @@ export class Player extends PIXI.Container {
         bonusAttackSpeed: 0,
         attackSpeedMultiplier: 1,
         numProjectiles: 1,
+        maxProjectilesPerWave: 5,
     }
 
     public projectileStats: ProjectileStats = {
@@ -114,6 +142,57 @@ export class Player extends PIXI.Container {
         this.addChild(this.hitbox)
     }
 
+    public modifyStat(stat: keyof PlayerStats | keyof ProjectileStats, amount: number, type: ModifyerType = 'ADDITIVE') {
+        if (stat in this.playerStats) {
+            this.applyAdjustment(
+                this.playerStats,
+                stat as keyof PlayerStats,
+                amount,
+                type,
+                PLAYER_STAT_CONSTRAINTS
+            )
+
+            // Handle side-effects
+            if (stat === 'maxHp') {
+                this.playerStats.hp = Math.min(this.playerStats.hp, this.playerStats.maxHp);
+            }
+        } else if (stat in this.projectileStats) {
+            this.applyAdjustment(
+                this.projectileStats,
+                stat as keyof ProjectileStats,
+                amount,
+                type,
+                PROJECTILE_STAT_CONSTRAINTS
+            );
+        }
+    }
+
+    private applyAdjustment<T extends object>(target: T, stat: keyof T, amount: number, type: ModifyerType, constraints: Partial<Record<keyof T, StatConstraint>>) {
+        // Cast to number to do math operations
+        let value = target[stat] as unknown as number;
+
+        switch (type) {
+            case 'ADDITIVE':
+                value += amount;
+                break;
+            case 'SUBTRACTIVE':
+                value -= amount;
+                break;
+            case 'MULTIPLIER':
+                value *= amount;
+                break;
+        }
+
+        // Apply min/max stat constraints
+        const constraint = constraints[stat];
+        if (constraint) {
+            if (constraint.min !== undefined) value = Math.max(value, constraint.min);
+            if (constraint.max !== undefined) value = Math.min(value, constraint.max);
+        }
+
+        target[stat] = value as any;
+    }
+
     public removeUpgradeById(upgradeId: string) {
         this.onFireShot = this.onFireShot.filter(h => h.id !== upgradeId)
         this.onShootHooks = this.onShootHooks.filter(h => h.id !== upgradeId)
@@ -141,6 +220,11 @@ export class Player extends PIXI.Container {
 
     public get isDead(): boolean {
         return this.playerStats.hp <= 0
+    }
+
+    get currentAttackSpeed(): number {
+        const raw = this.playerStats.baseAttackSpeed * this.playerStats.attackSpeedMultiplier + this.playerStats.bonusAttackSpeed
+        return Math.max(raw, this.MIN_ATTACK_SPEED)
     }
 
     public setInvincibility(duration: number) {
@@ -234,26 +318,35 @@ export class Player extends PIXI.Container {
         // Generate shots
         this.fireTimer -= dt
         if (this.fireTimer <= 0) {
-            const currentAttackSpeed = (this.playerStats.baseAttackSpeed + this.playerStats.bonusAttackSpeed) * this.playerStats.attackSpeedMultiplier
-            this.fireTimer = 1 / currentAttackSpeed
-
-            const totalProjectiles = this.playerStats.numProjectiles
-            const shotOffsets = [0, -this.sprite.width / 2, this.sprite.width / 2, -this.sprite.width / 4, this.sprite.width / 4]
+            // Can't let player not be able to shoot
+            this.fireTimer = 1 / this.currentAttackSpeed
 
             this.onFireShot.forEach(hook => hook.hook({ ...this.projectileStats }, gameContext))
             const setupHooks = this.projectileSetupHooks.map(h => h.hook)
 
-            for (let i = 0; i < totalProjectiles; i++) {
-                const waveIndex = Math.floor(i / 5)
-                const shotDelay = waveIndex * this.QUEUED_SHOTS_INTERVAL + dt
-                const shotOffsetIndex = i % 5
+            const maxPerWave = this.playerStats.maxProjectilesPerWave
+            const fireWidth = this.sprite.width
+            let projectilesLeft = this.playerStats.numProjectiles
+            let waveIndex = 0
 
-                this.queuedShots.push({
-                    offsetX: shotOffsets[shotOffsetIndex],
-                    stats: { ...this.projectileStats },
-                    setupHooks: setupHooks,
-                    delayTimer: shotDelay
-                })
+            while (projectilesLeft > 0) {
+                const bulletsInThisWave = Math.min(projectilesLeft, maxPerWave)
+                const shotDelay = waveIndex * this.QUEUED_SHOTS_INTERVAL
+
+                for (let i = 0; i < bulletsInThisWave; i++) {
+                    const relativePos = (i + 1) / (bulletsInThisWave + 1)
+                    const offsetX = (relativePos - 0.5) * fireWidth
+
+                    this.queuedShots.push({
+                        offsetX: offsetX,
+                        stats: { ...this.projectileStats },
+                        setupHooks: setupHooks,
+                        delayTimer: shotDelay
+                    })
+                }
+
+                waveIndex++
+                projectilesLeft -= maxPerWave
             }
         }
 

@@ -1,4 +1,5 @@
 import { GameContext } from '../GameContext'
+import { getWallHit } from '../GameConfig'
 
 export type UpgradeRarity = 'common' | 'rare' | 'epic' | 'legendary'
 
@@ -13,8 +14,6 @@ export interface Upgrade {
     canAppear?: (context: GameContext) => boolean
 }
 
-import { getWallHit } from '../GameConfig'
-
 // Base weight is 10
 
 export const UPGRADES: Upgrade[] = [
@@ -26,24 +25,13 @@ export const UPGRADES: Upgrade[] = [
         unique: false,
         weight: 10,
         onApply: (context) => {
-            context.player.playerStats.bonusAttackSpeed += context.player.playerStats.baseAttackSpeed * 0.1
-        }
-    },
-    {
-        id: 'parallel_emitters',
-        name: 'Parallel Emitters',
-        description: '+1 projectile',
-        rarity: 'epic',
-        unique: false,
-        weight: 10,
-        onApply: (context) => {
-            context.player.playerStats.numProjectiles += 1
+            context.player.modifyStat('bonusAttackSpeed', 0.1, 'ADDITIVE')
         }
     },
     {
         id: 'nanite_repair_burst',
         name: 'Nanite Repair Burst',
-        description: 'Heals 5 HP',
+        description: '+5 HP',
         rarity: 'common',
         unique: false,
         weight: 10,
@@ -62,7 +50,7 @@ export const UPGRADES: Upgrade[] = [
         unique: false,
         weight: 10,
         onApply: (context) => {
-            context.player.playerStats.maxHp += 1
+            context.player.modifyStat('maxHp', 1, 'ADDITIVE')
             context.player.heal(1)
         }
     },
@@ -74,7 +62,7 @@ export const UPGRADES: Upgrade[] = [
         unique: false,
         weight: 10,
         onApply: (context) => {
-            context.player.projectileStats.damage += 0.2
+            context.player.modifyStat('damage', 0.2, 'ADDITIVE')
         }
     },
     {
@@ -85,7 +73,10 @@ export const UPGRADES: Upgrade[] = [
         unique: false,
         weight: 10,
         onApply: (context) => {
-            context.player.projectileStats.pierce += 1
+            context.player.modifyStat('pierce', 1, 'ADDITIVE')
+        },
+        canAppear: (context) => {
+            return context.player.projectileStats.pierce < 5
         }
     },
     {
@@ -254,6 +245,42 @@ export const UPGRADES: Upgrade[] = [
                     })
                 }
             })
+        }
+    },
+    {
+        id: 'split_phase_emitters',
+        name: 'Split Phase Emitters',
+        description: '+1 projectile, -25% damage multiplier',
+        rarity: 'epic',
+        unique: true,
+        weight: 10,
+        onApply: (context) => {
+            context.player.modifyStat('numProjectiles', 1, 'ADDITIVE')
+            context.player.modifyStat('damageMultiplier', -0.25, 'ADDITIVE')
+        }
+    },
+    {
+        id: 'saturation_matrix',
+        name: 'Saturation Matrix',
+        description: '+2 projectile, x0.75 attack speed multiplier',
+        rarity: 'epic',
+        unique: true,
+        weight: 10,
+        onApply: (context) => {
+            context.player.modifyStat('numProjectiles', 2, 'ADDITIVE')
+            context.player.modifyStat('attackSpeedMultiplier', 0.75, 'MULTIPLIER')
+        }
+    },
+    {
+        id: 'compacted_emitter_array',
+        name: 'Compacted Emitter Array',
+        description: '+1 max projectiles per wave, x0.85 projectile size',
+        rarity: 'rare',
+        unique: true,
+        weight: 10,
+        onApply: (context) => {
+            context.player.modifyStat('maxProjectilesPerWave', 1, 'ADDITIVE')
+            context.player.modifyStat('sizeScale', 0.85, 'MULTIPLIER')
         }
     }
 ]
