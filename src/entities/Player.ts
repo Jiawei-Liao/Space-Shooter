@@ -4,33 +4,29 @@ import { getHitFlashAlpha } from '../utils/Math'
 import { GAME_WIDTH, GAME_HEIGHT } from '../GameConfig'
 import { PROJECTILE_STAT_CONSTRAINTS, type ProjectileStats } from '../types/Projectile'
 import { PLAYER_STAT_CONSTRAINTS, type PlayerStats } from '../types/Player'
-import type { Hook, ProjectileSetupHook } from '../types/Upgrade'
+import type { OnProjectileSetupHook, OnUpdateHook, OnFireShotHook, OnShootHook, OnHitHook, DamageEvent, ProjectileSetupFn } from '../types/Upgrade'
 import type { ModifyerType, StatConstraint } from '../types/Stats'
 
 interface QueuedShot {
     offsetX: number,
     stats: ProjectileStats,
-    setupHooks: ProjectileSetupHook[]
+    projectileSetupFns: ProjectileSetupFn[]
     delayTimer: number
 }
 
-export interface DamageEvent {
-    damage: number
-}
-
 export class Player extends PIXI.Container {
-    public sprite: PIXI.Sprite
-    public hitbox: PIXI.Graphics
+    sprite: PIXI.Sprite
+    hitbox: PIXI.Graphics
     private hitFilter: PIXI.ColorMatrixFilter
     private hitTimer: number = 0
     private fireTimer: number = 0
-    public onShoot?: (position: PIXI.PointData, projectileStats: ProjectileStats, setupHooks: ProjectileSetupHook[]) => void
+    onShoot?: (position: PIXI.PointData, projectileStats: ProjectileStats, projectileSetupFns: ProjectileSetupFn[]) => void
     private queuedShots: QueuedShot[] = []
     private readonly QUEUED_SHOTS_INTERVAL = 0.03
-    public readonly HITBOX_RADIUS: number = 4
+    readonly HITBOX_RADIUS: number = 4
     private readonly MIN_ATTACK_SPEED: number = 0.1 // Player has to be able to attack
 
-    public playerStats: PlayerStats = {
+    playerStats: PlayerStats = {
         hp: 1,
         maxHp: 1,
         score: 0,
@@ -46,21 +42,22 @@ export class Player extends PIXI.Container {
         maxProjectilesPerWave: 5,
     }
 
-    public projectileStats: ProjectileStats = {
+    projectileStats: ProjectileStats = {
         damage: 1,
         damageMultiplier: 1,
         width: 15,
         height: 15,
-        sizeScale: 1,
+        projectileSize: 1,
         projectileSpeed: 600,
         angle: -Math.PI / 2,
         pierce: 1,
     }
 
-    public onFireShot: Hook<(stats: ProjectileStats, gameContext: GameContext) => void>[] = []
-    public onShootHooks: Hook<(stats: ProjectileStats, gameContext: GameContext) => void>[] = []
-    public onHitHooks: Hook<(event: DamageEvent, gameContext: GameContext) => void>[] = []
-    public projectileSetupHooks: Hook<ProjectileSetupHook>[] = []
+    onProjectileSetupHooks: OnProjectileSetupHook[] = []
+    onUpdateHooks: OnUpdateHook[] = []
+    onFireShotHooks: OnFireShotHook[] = []
+    onShootHooks: OnShootHook[] = []
+    onHitHooks: OnHitHook[] = []
 
     constructor(texture: PIXI.Texture) {
         super()
@@ -88,7 +85,7 @@ export class Player extends PIXI.Container {
         this.addChild(this.hitbox)
     }
 
-    public modifyStat(stat: keyof PlayerStats | keyof ProjectileStats, amount: number, type: ModifyerType = 'ADDITIVE') {
+    modifyStat(stat: keyof PlayerStats | keyof ProjectileStats, amount: number, type: ModifyerType = 'ADDITIVE') {
         if (stat in this.playerStats) {
             this.applyAdjustment(
                 this.playerStats,
@@ -139,18 +136,19 @@ export class Player extends PIXI.Container {
         target[stat] = value as any;
     }
 
-    public removeUpgradeById(upgradeId: string) {
-        this.onFireShot = this.onFireShot.filter(h => h.id !== upgradeId)
+    removeUpgradeById(upgradeId: string) {
+        this.onUpdateHooks = this.onUpdateHooks.filter(h => h.id !== upgradeId)
+        this.onFireShotHooks = this.onFireShotHooks.filter(h => h.id !== upgradeId)
         this.onShootHooks = this.onShootHooks.filter(h => h.id !== upgradeId)
         this.onHitHooks = this.onHitHooks.filter(h => h.id !== upgradeId)
-        this.projectileSetupHooks = this.projectileSetupHooks.filter(h => h.id !== upgradeId)
+        this.onProjectileSetupHooks = this.onProjectileSetupHooks.filter(h => h.id !== upgradeId)
     }
 
-    public addExp(amount: number) {
+    addExp(amount: number) {
         this.playerStats.exp += amount
     }
 
-    public checkLevelUp(): boolean {
+    checkLevelUp(): boolean {
         if (this.playerStats.exp >= this.playerStats.maxExp) {
             this.playerStats.exp -= this.playerStats.maxExp
             this.playerStats.level++
@@ -160,26 +158,26 @@ export class Player extends PIXI.Container {
         return false
     }
 
-    public get isInvincible(): boolean {
+    get isInvincible(): boolean {
         return this.playerStats.invincibilityTimer > 0
     }
 
-    public get isDead(): boolean {
+    get isDead(): boolean {
         return this.playerStats.hp <= 0
     }
 
     get currentAttackSpeed(): number {
-        const raw = this.playerStats.baseAttackSpeed * this.playerStats.attackSpeedMultiplier + this.playerStats.bonusAttackSpeed
+        const raw = (this.playerStats.baseAttackSpeed * (1 + this.playerStats.bonusAttackSpeed)) * this.playerStats.attackSpeedMultiplier
         return Math.max(raw, this.MIN_ATTACK_SPEED)
     }
 
-    public setInvincibility(duration: number) {
+    setInvincibility(duration: number) {
         if (duration > this.playerStats.invincibilityTimer) {
             this.playerStats.invincibilityTimer = duration
         }
     }
 
-    public hit(damage: number = 1, gameContext: GameContext) {
+    hit(damage: number = 1, gameContext: GameContext) {
         if (this.isInvincible || this.isDead) return
 
         // Makes damage mutable, so it can be changed by hooks
@@ -202,7 +200,7 @@ export class Player extends PIXI.Container {
         }
     }
 
-    public heal(amount: number) {
+    heal(amount: number) {
         if (this.isDead) return
         this.playerStats.hp += amount
         if (this.playerStats.hp > this.playerStats.maxHp) {
@@ -212,6 +210,10 @@ export class Player extends PIXI.Container {
 
     update(dt: number, gameContext: GameContext) {
         if (this.isDead) return
+
+        for (const hookWrapper of this.onUpdateHooks) {
+            hookWrapper.hook(dt, gameContext)
+        }
 
         // Movement
         const mousePos = gameContext.inputManager.mousePos
@@ -267,8 +269,8 @@ export class Player extends PIXI.Container {
             // Can't let player not be able to shoot
             this.fireTimer = 1 / this.currentAttackSpeed
 
-            this.onFireShot.forEach(hook => hook.hook({ ...this.projectileStats }, gameContext))
-            const setupHooks = this.projectileSetupHooks.map(h => h.hook)
+            this.onFireShotHooks.forEach(hook => hook.hook({ ...this.projectileStats }, gameContext))
+            const projectileSetupFns = this.onProjectileSetupHooks.map(h => h.hook)
 
             const maxPerWave = this.playerStats.maxProjectilesPerWave
             const fireWidth = this.sprite.width
@@ -286,7 +288,7 @@ export class Player extends PIXI.Container {
                     this.queuedShots.push({
                         offsetX: offsetX,
                         stats: { ...this.projectileStats },
-                        setupHooks: setupHooks,
+                        projectileSetupFns: projectileSetupFns,
                         delayTimer: shotDelay
                     })
                 }
@@ -302,7 +304,7 @@ export class Player extends PIXI.Container {
             shot.delayTimer -= dt
 
             if (shot.delayTimer <= 0) {
-                this.onShoot?.({ x: this.x + shot.offsetX, y: this.y }, shot.stats, shot.setupHooks)
+                this.onShoot?.({ x: this.x + shot.offsetX, y: this.y }, shot.stats, shot.projectileSetupFns)
                 this.queuedShots.splice(i, 1)
             }
         }

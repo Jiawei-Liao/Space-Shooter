@@ -12,21 +12,21 @@ import { ExpManager } from './systems/ExpManager'
 import { UpgradeManager } from './systems/UpgradeManager'
 import { InputManager } from './systems/InputManager'
 import type { EnemyBlueprint } from './types/Enemy'
-import { createEnemyBlueprints } from './entities/EnemyBlueprint'
+import { createEnemyBlueprints } from './blueprints/EnemyBlueprint'
 
 export class GameContext {
-    public app: PIXI.Application
-    public player: Player
-    public playerProjectiles: ProjectileManager
-    public enemyProjectiles: ProjectileManager
-    public enemyManager: EnemyManager
-    public enemyDirector: EnemyDirector
-    public hud: HUD
-    public enemyBlueprints: Record<string, EnemyBlueprint>
-    public background: Background
-    public expManager: ExpManager
-    public upgradeManager: UpgradeManager
-    public inputManager: InputManager
+    app: PIXI.Application
+    player: Player
+    playerProjectiles: ProjectileManager
+    enemyProjectiles: ProjectileManager
+    enemyManager: EnemyManager
+    enemyDirector: EnemyDirector
+    hud: HUD
+    enemyBlueprints: Record<string, EnemyBlueprint>
+    background: Background
+    expManager: ExpManager
+    upgradeManager: UpgradeManager
+    inputManager: InputManager
 
     constructor(app: PIXI.Application, inputManager: InputManager, playerShipTexture: PIXI.Texture, projectileTextures: Record<string, PIXI.Texture>, enemyTextures: Record<string, PIXI.Texture>, background: Background) {
         this.app = app
@@ -56,7 +56,7 @@ export class GameContext {
         this.player = new Player(playerShipTexture)
         this.player.x = GAME_WIDTH / 2
         this.player.y = GAME_HEIGHT / 2
-        this.player.onShoot = (position, projectileStats, setupHooks) => this.playerProjectiles.spawn(position, 'player_bullet', projectileStats, setupHooks)
+        this.player.onShoot = (position, projectileStats, setupProjectileFns) => this.playerProjectiles.spawn(position, 'player_bullet', projectileStats, setupProjectileFns, this)
         playerShipLayer.addChild(this.player)
 
         // Setup Enemies

@@ -4,18 +4,18 @@ import { getHitFlashAlpha } from '../utils/Math'
 import type { EnemyBehaviorFn, EnemyBlueprint, EnemyStats } from '../types/Enemy'
 
 export class Enemy extends PIXI.Container {
-    public sprite: PIXI.Sprite
+    sprite: PIXI.Sprite
     private hitFilter: PIXI.ColorMatrixFilter
     private hitFilterTimer: number = 0
     private hitFilterDuration: number = 0.1
-    public isActive = false
-    public hitboxType: 'circle' | 'rectangle' = 'circle'
-    public stats!: EnemyStats
-    public hp: number = 0
+    isActive = false
+    hitboxType: 'circle' | 'rectangle' = 'circle'
+    stats!: EnemyStats
+    hp: number = 0
     private shootFn: EnemyBehaviorFn = () => { }
     private moveFn: EnemyBehaviorFn = () => { }
-    public offset = { x: 0, y: 0 }
-    public sourceSetId?: string
+    offset = { x: 0, y: 0 }
+    sourceSetId?: string
 
     constructor() {
         super()
@@ -48,7 +48,7 @@ export class Enemy extends PIXI.Container {
         this.visible = true
     }
 
-    public hit(damage: number) {
+    hit(damage: number) {
         this.hp -= damage
 
         this.hitFilterTimer = this.hitFilterDuration

@@ -22,5 +22,6 @@ export const PLAYER_STAT_CONSTRAINTS: Partial<Record<keyof PlayerStats, StatCons
     baseAttackSpeed: { min: 0.1 },
     attackSpeedMultiplier: { min: 0.1 },
     numProjectiles: { min: 1 },
-    maxProjectilesPerWave: { min: 1 }
+    maxProjectilesPerWave: { min: 1 },
+    invincibilityDuration: { min: 0.1 }
 }

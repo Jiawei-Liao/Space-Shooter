@@ -1,6 +1,6 @@
 import { GameContext } from '../GameContext'
 import type { Upgrade, UpgradeRarity } from '../types/Upgrade'
-import { UPGRADES } from './Upgrades'
+import { UPGRADES } from '../blueprints/Upgrades'
 
 export type UpgradeSource = 'levelUp' | 'bossWave'
 
@@ -20,7 +20,7 @@ export class UpgradeManager {
         this.allUpgrades = UPGRADES
     }
 
-    public getUpgradeOptions(context: GameContext, upgradeSource: UpgradeSource): Upgrade[] {
+    getUpgradeOptions(context: GameContext, upgradeSource: UpgradeSource): Upgrade[] {
         const options: Upgrade[] = []
 
         // Get pool of available upgrades
@@ -109,7 +109,7 @@ export class UpgradeManager {
         return list[0]
     }
 
-    public applyUpgrade(upgrade: Upgrade, context: GameContext) {
+    applyUpgrade(upgrade: Upgrade, context: GameContext) {
         upgrade.onApply(context)
         if (upgrade.unique) {
             this.acquiredUpgradeIds.add(upgrade.id)

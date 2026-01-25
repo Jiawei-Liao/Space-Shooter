@@ -2,19 +2,18 @@ import * as PIXI from 'pixi.js'
 import { isOutOfBounds } from '../GameConfig'
 import type { Enemy } from './Enemy'
 import type { GameContext } from '../GameContext'
-import type { ProjectileManager } from '../systems/ProjectileManager'
 import type { ProjectileStats } from '../types/Projectile'
-import type { ProjectileSetupHook } from '../types/Upgrade'
+import type { ProjectileSetupFn } from '../types/Upgrade'
 
 export class Projectile extends PIXI.Sprite {
-    public isActive: boolean = false
-    public projectileStats!: ProjectileStats
-    public hitTargets: Set<Enemy> = new Set()
+    isActive: boolean = false
+    projectileStats!: ProjectileStats
+    hitTargets: Set<Enemy> = new Set()
     private isPlayerProjectiles: boolean = false
 
-    public onUpdateHooks: ((dt: number, gameContext: GameContext) => void)[] = []
-    public onHitHooks: ((enemy: Enemy, gameContext: GameContext) => void)[] = []
-    public onDestroyHooks: ((gameContext: GameContext) => void)[] = []
+    onUpdateHooks: ((dt: number, gameContext: GameContext) => void)[] = []
+    onHitHooks: ((enemy: Enemy, gameContext: GameContext) => void)[] = []
+    onDestroyHooks: ((gameContext: GameContext) => void)[] = []
 
     constructor(texture: PIXI.Texture, isPlayerProjectiles: boolean = false) {
         super(texture)
@@ -23,18 +22,19 @@ export class Projectile extends PIXI.Sprite {
         this.isPlayerProjectiles = isPlayerProjectiles
     }
 
-    spawn(position: PIXI.PointData, texture: PIXI.Texture, projectileStats: ProjectileStats, setupHooks: ProjectileSetupHook[], manager: ProjectileManager) {
+    spawn(position: PIXI.PointData, texture: PIXI.Texture, projectileStats: ProjectileStats, projectileSetupFns: ProjectileSetupFn[], context: GameContext) {
         this.texture = texture
         this.projectileStats = projectileStats
         this.position.set(position.x, position.y)
-        this.width = projectileStats.width * projectileStats.sizeScale
-        this.height = projectileStats.height * projectileStats.sizeScale
+        this.width = projectileStats.width * projectileStats.projectileSize
+        this.height = projectileStats.height * projectileStats.projectileSize
+
         this.hitTargets.clear()
         this.onUpdateHooks = []
         this.onHitHooks = []
         this.onDestroyHooks = []
 
-        setupHooks.forEach(hook => hook(this, manager))
+        projectileSetupFns.forEach(hook => hook(this, context))
 
         this.isActive = true
         this.visible = true
@@ -47,6 +47,10 @@ export class Projectile extends PIXI.Sprite {
         for (const hook of this.onUpdateHooks) {
             hook(dt, gameContext)
         }
+
+        // Change projectile size
+        this.width = this.projectileStats.width * this.projectileStats.projectileSize
+        this.height = this.projectileStats.height * this.projectileStats.projectileSize
 
         // Move projectile
         this.rotation = this.projectileStats.angle

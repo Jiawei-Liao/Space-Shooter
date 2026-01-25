@@ -5,9 +5,9 @@ import { EXP_TIERS, type ExpTier } from '../types/Exp'
 export class ExpParticle extends PIXI.Container {
     private graphics: PIXI.Graphics
     private glow: PIXI.Graphics
-    public velocity: { x: number, y: number } = { x: 0, y: 0 }
-    public isActive: boolean = false
-    public value: number = 0
+    velocity: { x: number, y: number } = { x: 0, y: 0 }
+    isActive: boolean = false
+    value: number = 0
     private magnetSpeed: number = 0
     private readonly MAX_MAGNET_SPEED = 800
     private readonly MAGNET_ACCEL = 1500
@@ -24,7 +24,7 @@ export class ExpParticle extends PIXI.Container {
         this.visible = false
     }
 
-    public spawn(x: number, y: number, tier: ExpTier) {
+    spawn(x: number, y: number, tier: ExpTier) {
         const config = EXP_TIERS[tier]
         this.position.set(x, y)
         this.isActive = true
@@ -67,7 +67,7 @@ export class ExpParticle extends PIXI.Container {
         this.glow.fill({ color: config.color, alpha: config.glow })
     }
 
-    public update(dt: number, context: GameContext) {
+    update(dt: number, context: GameContext) {
         if (!this.isActive) return
 
         const player = context.player

@@ -5,7 +5,7 @@ export interface ProjectileStats {
     damageMultiplier: number,
     width: number,
     height: number
-    sizeScale: number,
+    projectileSize: number,
     projectileSpeed: number,
     angle: number
     pierce: number
@@ -16,6 +16,7 @@ export const PROJECTILE_STAT_CONSTRAINTS: Partial<Record<keyof ProjectileStats, 
     damageMultiplier: { min: 0.1 },
     width: { min: 1 },
     height: { min: 1 },
-    sizeScale: { min: 0.1 },
+    projectileSize: { min: 0.1 },
+    projectileSpeed: { min: 10 },
     pierce: { min: 1 }
 }

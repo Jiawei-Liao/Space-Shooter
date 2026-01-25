@@ -16,7 +16,7 @@ export class Background extends PIXI.Container {
     private stars: Star[] = []
     warpFactor: number = 1.0
     private targetWarpFactor: number = 1.0
-    public readonly BASE_SPEED: number = 50
+    readonly BASE_SPEED: number = 50
     backgroundSpeed = 50
 
     private readonly STAR_CONFIG: StarConfig[] = [
@@ -82,11 +82,11 @@ export class Background extends PIXI.Container {
         }
     }
 
-    public setWarpFactor(factor: number) {
+    setWarpFactor(factor: number) {
         this.targetWarpFactor = factor
     }
 
-    public update(dt: number) {
+    update(dt: number) {
         // Smoothly increase current warp factor to target
         this.warpFactor += (this.targetWarpFactor - this.warpFactor) * 5.0 * dt
         this.backgroundSpeed = this.BASE_SPEED * this.warpFactor

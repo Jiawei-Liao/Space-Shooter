@@ -2,13 +2,13 @@ import * as PIXI from 'pixi.js'
 import { GameContext } from '../GameContext'
 import { Projectile } from '../entities/Projectile'
 import type { ProjectileStats } from '../types/Projectile'
-import type { ProjectileSetupHook } from '../types/Upgrade'
+import type { ProjectileSetupFn } from '../types/Upgrade'
 
 
 export class ProjectileManager {
     private textures: Record<string, PIXI.Texture>
     private projectilePool: Projectile[] = []
-    public activeProjectilePool: Projectile[] = []
+    activeProjectilePool: Projectile[] = []
 
     constructor(container: PIXI.Container, textures: Record<string, PIXI.Texture>, projectileLimit: number, isPlayerProjectiles: boolean = false) {
         this.textures = textures
@@ -19,11 +19,11 @@ export class ProjectileManager {
         }
     }
 
-    spawn(position: PIXI.PointData, type: string, projectileStats: ProjectileStats, setupHooks: ProjectileSetupHook[]) {
+    spawn(position: PIXI.PointData, type: string, projectileStats: ProjectileStats, projectileSetupFns: ProjectileSetupFn[], gameContext: GameContext) {
         const projectile = this.projectilePool.find(p => !p.isActive)
         if (projectile) {
             const texture = this.textures[type]
-            projectile.spawn(position, texture || PIXI.Texture.EMPTY, projectileStats, setupHooks, this)
+            projectile.spawn(position, texture || PIXI.Texture.EMPTY, projectileStats, projectileSetupFns, gameContext)
             this.activeProjectilePool.push(projectile)
         }
     }

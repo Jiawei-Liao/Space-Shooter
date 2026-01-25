@@ -46,11 +46,11 @@ export class UIManager {
         this.uiLayer.style.display = ''
     }
 
-    public get ScoreListElement() {
+    get ScoreListElement() {
         return this.scoreList
     }
 
-    public setGameState(state: GameState) {
+    setGameState(state: GameState) {
         if (state === GameState.TITLE) {
             this.titleScreen.classList.remove('hidden')
             this.deathScreen.classList.add('hidden')
@@ -68,34 +68,34 @@ export class UIManager {
         }
     }
 
-    public showGameOverStats(score: number, wave: number) {
+    showGameOverStats(score: number, wave: number) {
         this.finalScoreEl.textContent = score.toString()
         this.finalWaveEl.textContent = wave.toString()
     }
 
-    public updateScoreDisplay(score: number) {
+    updateScoreDisplay(score: number) {
         this.finalScoreEl.innerText = `${score}`
     }
 
-    public showAdBanner() {
+    showAdBanner() {
         this.adPopup.classList.remove('hidden')
         this.respawnAdBtn.setAttribute('disabled', 'true')
         this.respawnAdBtn.style.display = 'none'
     }
 
-    public onStart(callback: () => void) {
+    onStart(callback: () => void) {
         this.startBtn.addEventListener('click', callback)
     }
 
-    public onRestart(callback: () => void) {
+    onRestart(callback: () => void) {
         this.restartBtn.addEventListener('click', callback)
     }
 
-    public onHome(callback: () => void) {
+    onHome(callback: () => void) {
         this.homeBtn.addEventListener('click', callback)
     }
 
-    public onWatchAd(callback: () => void) {
+    onWatchAd(callback: () => void) {
         this.respawnAdBtn.addEventListener('click', () => {
             const adLinks = [
                 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', // Rick Roll
@@ -107,7 +107,7 @@ export class UIManager {
         })
     }
 
-    public showUpgradeMenu(upgrades: any[], onSelect: (upgrade: any) => void) {
+    showUpgradeMenu(upgrades: any[], onSelect: (upgrade: any) => void) {
 
         this.upgradeMenu!.classList.remove('hidden')
         this.upgradeCardsContainer!.innerHTML = ''
@@ -116,10 +116,12 @@ export class UIManager {
             const card = document.createElement('div')
             card.className = `upgrade-card card-${upgrade.rarity}`
 
+            const imgUrl = new URL(`../assets/upgrades/${upgrade.id}.png`, import.meta.url).href
+
             card.innerHTML = `
                 <h3>${upgrade.name}</h3>
+                <img src="${imgUrl}" class="upgrade-icon" alt="${upgrade.name}" onerror="this.style.display='none'">
                 <p>${upgrade.description}</p>
-                <small>${upgrade.unique ? 'UNIQUE' : ''}</small>
                 `
             card.addEventListener('click', () => {
                 this.upgradeMenu!.classList.add('hidden')

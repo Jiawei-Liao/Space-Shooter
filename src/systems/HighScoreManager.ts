@@ -23,11 +23,11 @@ export class HighScoreManager {
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.highScores))
     }
 
-    public getScores(): HighScore[] {
+    getScores(): HighScore[] {
         return [...this.highScores]
     }
 
-    public addScore(entry: HighScore) {
+    addScore(entry: HighScore) {
         // Check if current entry is already in the list (works for "ad watched" since its the same object)
         if (!this.highScores.includes(entry)) {
             this.highScores.push(entry)
@@ -44,7 +44,7 @@ export class HighScoreManager {
         this.saveScores()
     }
 
-    public render(listElement: HTMLElement) {
+    render(listElement: HTMLElement) {
         listElement.innerHTML = ''
 
         // Ensure sorted before display

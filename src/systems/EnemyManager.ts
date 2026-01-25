@@ -6,7 +6,7 @@ import type { EnemyBehaviorFn, EnemyBlueprint } from '../types/Enemy'
 
 export class EnemyManager {
     private enemyPool: Enemy[] = []
-    public activeEnemies: Enemy[] = []
+    activeEnemies: Enemy[] = []
 
     constructor(container: PIXI.Container) {
         for (let i = 0; i < ENEMY_LIMIT; i++) {

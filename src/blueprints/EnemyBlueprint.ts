@@ -56,12 +56,13 @@ export const createEnemyBlueprints = (textures: Record<string, PIXI.Texture>): R
                                 damageMultiplier: 1,
                                 width: 20,
                                 height: 20,
-                                sizeScale: 1,
+                                projectileSize: 1,
                                 projectileSpeed: 200,
                                 angle: Math.PI / 2,
                                 pierce: 1
                             },
-                            []
+                            [],
+                            gameContext
                         )
                     }
                 }

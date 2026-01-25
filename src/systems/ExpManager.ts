@@ -34,7 +34,7 @@ export class ExpManager {
         return p
     }
 
-    public spawn(x: number, y: number, totalValue: number) {
+    spawn(x: number, y: number, totalValue: number) {
         let remaining = totalValue
 
         const sortedTiers = (Object.keys(EXP_TIERS) as ExpTier[]).sort(
@@ -61,7 +61,7 @@ export class ExpManager {
         }
     }
 
-    public update(dt: number, context: GameContext) {
+    update(dt: number, context: GameContext) {
         for (let i = this.activeParticles.length - 1; i >= 0; i--) {
             const p = this.activeParticles[i]
             p.update(dt, context)

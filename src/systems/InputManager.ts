@@ -4,7 +4,7 @@ export type INPUT_INTENTS = 'ACTIVATE_ITEM' | 'NEXT_ITEM' | 'PREVIOUS_ITEM'
 
 export class InputManager extends PIXI.EventEmitter {
     private canvas: HTMLCanvasElement
-    public mousePos: PIXI.Point = new PIXI.Point(0, 0)
+    mousePos: PIXI.Point = new PIXI.Point(0, 0)
     private intents = new Set<INPUT_INTENTS>()
 
     constructor(canvas: HTMLCanvasElement) {
@@ -30,13 +30,13 @@ export class InputManager extends PIXI.EventEmitter {
         if (e.code === 'KeyE') this.intents.add('PREVIOUS_ITEM')
     }
 
-    public getIntents(): INPUT_INTENTS[] {
+    getIntents(): INPUT_INTENTS[] {
         const current = Array.from(this.intents)
         this.intents.clear()
         return current
     }
 
-    public cleanup() {
+    cleanup() {
         window.removeEventListener('mousemove', this.handleMouseMove)
         window.removeEventListener('keydown', this.handleKeyDown)
     }

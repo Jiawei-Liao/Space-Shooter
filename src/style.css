@@ -289,6 +289,14 @@ body {
     margin-bottom: 0.8rem;
 }
 
+.upgrade-icon {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 0.5rem;
+    image-rendering: pixelated;
+}
+
 .upgrade-card p {
     font-size: 0.75rem;
     line-height: 1.4;
